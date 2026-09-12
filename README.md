@@ -74,8 +74,9 @@ agent receives the full accrual and the caller receives zero.
 ## Quick start
 
 ```bash
-# contracts: 9 tests against live Aave v3 on Base, pinned block, no mocks
-cd contracts && forge test -vv
+# contracts: 13 tests against live Aave v3 on Base, pinned block, no mocks.
+# --threads 1 is required: concurrent fork requests trigger TLS failures.
+cd contracts && BASE_RPC_URL=https://base.drpc.org forge test --threads 1 -vv
 
 # app
 cd app && cp env.example .env.local   # fill in NEXT_PUBLIC_*
@@ -114,8 +115,14 @@ is not the size of the cheque, it is that the agent never dies.
 - **Aave v3** is the index. The whole mechanic is `getReserveNormalizedIncome`.
 - **Privy** is how an owner signs in and commits principal, and how an agent holds
   a spending wallet.
-- **Uniswap** converts a non-USDC endowment's yield into spendable USDC, so an
-  endowment can be held in one asset and paid out in another.
+- **Uniswap** converts a non-USDC endowment's yield into spendable USDC via
+  `harvestAndSwap`, so an endowment can be held in WETH and the agent still gets paid
+  in something it can spend. The swap keeps `harvest` permissionless because
+  `amountOutMinimum` is floored by Aave's own Chainlink-backed oracle: a caller may
+  raise the slippage guard but never lower it, so `minOut = 0` does not open a
+  sandwich. Verified on a fork: a 10 WETH endowment accrued 0.08638 WETH over 180
+  days and paid the agent **218.698043 USDC**, matching the oracle price of $2,531.54
+  to within two cents.
 - **The Graph** indexes every endowment and every release. The MCP server answers
   *"what can I spend forever?"* from indexed harvest history, which is the question
   an endowed agent actually needs and cannot get from a balance call.
@@ -137,19 +144,26 @@ Built and tested. Not audited, not adversarially reviewed.
 
 | Component | State |
 |---|---|
-| `Weir.sol` | tested: 9 fork tests pass against live Aave v3 on Base |
+| `Weir.sol` | tested: 12 of 13 fork tests pass against live Aave v3 on Base |
 | Lifecycle e2e | tested: deploy, open, accrue, third-party harvest, solvency, on a Base fork |
 | Subgraph | built: compiles to WASM, not yet deployed to Studio |
 | MCP server | built: compiles and starts |
 | Agent | built: typechecks |
 | Frontend | built: production build succeeds |
+| Sandwich-rejection test | blocked: needs an RPC that serves Uniswap tick slots; free endpoints rate-limit it |
 | Mainnet deploy | not done |
 
 ## Troubleshooting
 
-**`forge test` fails with `BadRecordMac` or a connection error**
-The public Base RPC is rate-limiting. The fork block is pinned so state caches
-after one successful run; re-run, or set a private RPC in `contracts/foundry.toml`.
+**`forge test` fails with `BadRecordMac`**
+Run with `--threads 1`. This is a TLS integrity error caused by forge's concurrent
+fork requests, and it reproduces against every public Base endpoint tried. It is not
+a provider problem and switching RPC does not fix it; reducing concurrency does.
+
+**`forge test` fails with HTTP 429**
+The free RPC tier is exhausted. The fork block is pinned so state caches after one
+successful run, but the sandwich test touches enough Uniswap tick slots to blow
+through a free quota on its own. Set `BASE_RPC_URL` to a private endpoint.
 
 **`harvest` reverts with `BelowFloor`**
 The accrual has not yet reached `minPayout`. This is intended: it stops harvests
