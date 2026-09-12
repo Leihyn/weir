@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IPool, IAToken} from "./interfaces/IAaveV3.sol";
+import {IPool, IAToken, IPoolAddressesProvider, IAaveOracle} from "./interfaces/IAaveV3.sol";
+import {ISwapRouter02} from "./interfaces/IUniswapV3.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 
 /// @title  Weir
@@ -36,6 +37,15 @@ contract Weir {
     }
 
     IPool public immutable pool;
+    /// @notice Where non-matching endowment yield is swapped to, so an agent is
+    ///         always paid in one spendable asset regardless of how it was endowed.
+    address public immutable payoutToken;
+    ISwapRouter02 public immutable router;
+
+    /// @notice Ceiling on how far below the oracle-implied output a swap may land.
+    ///         This is what lets `harvestAndSwap` stay permissionless: a caller
+    ///         cannot pass a rotten `amountOutMinimum` and sandwich the agent.
+    uint256 public constant MAX_SLIPPAGE_BPS = 100; // 1%
 
     uint256 public nextId = 1;
     mapping(uint256 => Endowment) public endowments;
@@ -69,6 +79,17 @@ contract Weir {
     event AgentChanged(uint256 indexed id, address indexed oldAgent, address indexed newAgent);
     event RuleChanged(uint256 indexed id, uint256 minPayout, uint64 minInterval);
     event EndowmentClosed(uint256 indexed id, address indexed owner, uint256 principalReturned);
+    event HarvestedAndSwapped(
+        uint256 indexed id,
+        address indexed agent,
+        address assetIn,
+        uint256 amountIn,
+        address assetOut,
+        uint256 amountOut,
+        uint256 oracleFloor,
+        uint256 fromIndex,
+        uint256 toIndex
+    );
 
     error NotOwner();
     error Inactive();
@@ -80,6 +101,8 @@ contract Weir {
     error WithdrawShortfall(uint256 requested, uint256 received);
     error Reentrancy();
     error TokenCallFailed(address token);
+    error NoSwapNeeded();
+    error OraclePriceUnavailable();
 
     modifier nonReentrant() {
         if (_lock == 1) revert Reentrancy();
@@ -94,9 +117,13 @@ contract Weir {
         _;
     }
 
-    constructor(IPool _pool) {
-        if (address(_pool) == address(0)) revert ZeroAddress();
+    constructor(IPool _pool, ISwapRouter02 _router, address _payoutToken) {
+        if (address(_pool) == address(0) || address(_router) == address(0) || _payoutToken == address(0)) {
+            revert ZeroAddress();
+        }
         pool = _pool;
+        router = _router;
+        payoutToken = _payoutToken;
     }
 
     // ---------------------------------------------------------------- views
@@ -217,6 +244,54 @@ contract Weir {
         emit Harvested(id, e.agent, e.asset, amount, i0, i1, e.totalPaid);
     }
 
+    /// @notice Release the accrued yield of a non-payout-token endowment, convert it
+    ///         on Uniswap and send the proceeds to the agent. Still permissionless:
+    ///         the amount comes from the index, the recipient comes from storage, and
+    ///         the minimum output is floored by Aave's oracle, so a caller can raise
+    ///         the slippage guard but never lower it.
+    function harvestAndSwap(uint256 id, uint24 fee, uint256 minOut) external nonReentrant returns (uint256 amountOut) {
+        Endowment storage e = endowments[id];
+        if (!e.active) revert Inactive();
+        if (e.asset == payoutToken) revert NoSwapNeeded();
+
+        uint64 nextAllowed = e.lastHarvest + e.minInterval;
+        if (block.timestamp < nextAllowed) revert TooSoon(nextAllowed);
+
+        uint256 i0 = e.lastIndex;
+        uint256 i1 = pool.getReserveNormalizedIncome(e.asset);
+        if (i1 <= i0) revert NothingAccrued();
+
+        (uint256 amountIn, uint256 reserve) = _releasable(e, i1);
+        if (amountIn == 0) revert NothingAccrued();
+        if (amountIn < e.minPayout) revert BelowFloor(amountIn, e.minPayout);
+
+        e.lastIndex = i1;
+        e.lastHarvest = uint64(block.timestamp);
+        e.withheld += reserve;
+        e.totalPaid += amountIn; // denominated in the endowment's asset
+
+        uint256 got = pool.withdraw(e.asset, amountIn, address(this));
+        if (got < amountIn) revert WithdrawShortfall(amountIn, got);
+
+        uint256 floorOut = _oracleFloor(e.asset, amountIn);
+        uint256 effectiveMin = minOut > floorOut ? minOut : floorOut;
+
+        _approve(e.asset, address(router), amountIn);
+        amountOut = router.exactInputSingle(
+            ISwapRouter02.ExactInputSingleParams({
+                tokenIn: e.asset,
+                tokenOut: payoutToken,
+                fee: fee,
+                recipient: e.agent,
+                amountIn: amountIn,
+                amountOutMinimum: effectiveMin,
+                sqrtPriceLimitX96: 0
+            })
+        );
+
+        emit HarvestedAndSwapped(id, e.agent, e.asset, amountIn, payoutToken, amountOut, floorOut, i0, i1);
+    }
+
     /// @notice Add principal. Settles any pending accrual to the agent first so
     ///         the single `lastIndex` baseline stays correct for the new size.
     function topUp(uint256 id, uint256 amount) external onlyOwnerOf(id) nonReentrant {
@@ -287,6 +362,21 @@ contract Weir {
     function _supply(address asset, uint256 amount) private {
         _approve(asset, address(pool), amount);
         pool.supply(asset, amount, address(this), 0);
+    }
+
+    /// @dev Oracle-implied output for `amountIn`, less MAX_SLIPPAGE_BPS. Uses the
+    ///      same Chainlink-backed oracle Aave itself prices collateral with, so this
+    ///      introduces no trust assumption Weir did not already carry.
+    function _oracleFloor(address assetIn, uint256 amountIn) private view returns (uint256) {
+        IAaveOracle oracle = IAaveOracle(IPoolAddressesProvider(pool.ADDRESSES_PROVIDER()).getPriceOracle());
+        uint256 priceIn = oracle.getAssetPrice(assetIn);
+        uint256 priceOut = oracle.getAssetPrice(payoutToken);
+        if (priceIn == 0 || priceOut == 0) revert OraclePriceUnavailable();
+
+        uint256 unitIn = 10 ** IERC20(assetIn).decimals();
+        uint256 unitOut = 10 ** IERC20(payoutToken).decimals();
+        uint256 expected = (amountIn * priceIn * unitOut) / (priceOut * unitIn);
+        return (expected * (10_000 - MAX_SLIPPAGE_BPS)) / 10_000;
     }
 
     function _pull(address asset, address from, uint256 amount) private {

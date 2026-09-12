@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Test, console2} from "forge-std/Test.sol";
+import {Test, console2, Vm} from "forge-std/Test.sol";
 import {Weir} from "../src/Weir.sol";
 import {IPool, IAToken} from "../src/interfaces/IAaveV3.sol";
+import {ISwapRouter02} from "../src/interfaces/IUniswapV3.sol";
 import {IERC20} from "../src/interfaces/IERC20.sol";
 
 /// @dev Runs against live Aave v3 on Base. No mocks: the index that drives every
@@ -11,6 +12,8 @@ import {IERC20} from "../src/interfaces/IERC20.sol";
 contract WeirForkTest is Test {
     address constant AAVE_POOL = 0xA238Dd80C259a72e81d7e4664a9801593F98d1c5;
     address constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
+    address constant WETH = 0x4200000000000000000000000000000000000006;
+    address constant UNI_ROUTER = 0x2626664c2603336E57B271c5C0b26F421741e481;
 
     Weir weir;
     IPool pool = IPool(AAVE_POOL);
@@ -32,7 +35,7 @@ contract WeirForkTest is Test {
         } else {
             vm.createSelectFork(vm.rpcUrl("base"), blockNumber);
         }
-        weir = new Weir(pool);
+        weir = new Weir(pool, ISwapRouter02(UNI_ROUTER), USDC);
         deal(USDC, owner, PRINCIPAL * 2);
     }
 
@@ -181,5 +184,89 @@ contract WeirForkTest is Test {
         vm.stopPrank();
         assertEq(IERC20(USDC).balanceOf(owner) - ownerBefore, PRINCIPAL * 2, "full principal returned");
         assertEq(IAToken(aUSDC).balanceOf(address(weir)), 0, "nothing stranded");
+    }
+
+    // ------------------------------------------------------ WETH swap path
+
+    function _openWeth(uint256 amount) internal returns (uint256 id) {
+        deal(WETH, owner, amount);
+        vm.startPrank(owner);
+        IERC20(WETH).approve(address(weir), amount);
+        id = weir.open(WETH, amount, agent, 0, 0);
+        vm.stopPrank();
+    }
+
+    /// A WETH endowment pays its agent in USDC: held in one asset, spent in another.
+    function test_wethEndowmentPaysAgentInUsdc() public {
+        uint256 id = _openWeth(10 ether);
+        vm.warp(block.timestamp + 180 days);
+
+        uint256 accruedWeth = weir.accrued(id);
+        assertGt(accruedWeth, 0, "WETH reserve must have accrued");
+
+        uint256 out = weir.harvestAndSwap(id, 500, 0);
+
+        assertGt(out, 0, "agent received USDC");
+        assertEq(IERC20(USDC).balanceOf(agent), out, "USDC landed with the agent, not the caller");
+        assertEq(IERC20(WETH).balanceOf(address(weir)), 0, "no WETH left dangling in the contract");
+        console2.log("180d WETH accrual (wei):", accruedWeth);
+        console2.log("USDC paid to agent (6dp):", out);
+    }
+
+    /// minOut=0 from a hostile caller must not disable slippage protection: the
+    /// oracle floor is a floor, so the caller can raise it but never lower it.
+    function test_oracleFloorIsEnforcedEvenWhenCallerPassesZero() public {
+        uint256 id = _openWeth(10 ether);
+        vm.warp(block.timestamp + 180 days);
+
+        uint256 amountIn = weir.accrued(id);
+
+        vm.recordLogs();
+        vm.prank(stranger);
+        uint256 out = weir.harvestAndSwap(id, 500, 0);
+
+        // recover the floor the contract computed from its own event
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        uint256 floorOut;
+        for (uint256 i = 0; i < logs.length; i++) {
+            if (logs[i].topics[0] == keccak256("HarvestedAndSwapped(uint256,address,address,uint256,address,uint256,uint256,uint256,uint256)")) {
+                (,,, floorOut,,) = abi.decode(logs[i].data, (address, uint256, address, uint256, uint256, uint256));
+            }
+        }
+        assertGt(floorOut, 0, "contract computed a non-zero oracle floor");
+        assertGe(out, floorOut, "executed output respected the oracle floor");
+        assertEq(IERC20(USDC).balanceOf(stranger), 0, "hostile caller gained nothing");
+        assertGt(amountIn, 0);
+    }
+
+    /// A sandwich attempt: shove the pool price, then the floor must reject the swap.
+    /// @dev Touches a large number of Uniswap tick slots, so it needs an RPC that
+    ///      will serve them. Free public endpoints rate-limit it; set BASE_RPC_URL
+    ///      to a private endpoint to run it.
+    function test_sandwichAttemptRevertsAgainstOracleFloor() public {
+        uint256 id = _openWeth(10 ether);
+        vm.warp(block.timestamp + 180 days);
+
+        // attacker dumps size into WETH->USDC to crater the executed price
+        deal(WETH, stranger, 600 ether);
+        vm.startPrank(stranger);
+        IERC20(WETH).approve(UNI_ROUTER, type(uint256).max);
+        ISwapRouter02(UNI_ROUTER).exactInputSingle(
+            ISwapRouter02.ExactInputSingleParams({
+                tokenIn: WETH, tokenOut: USDC, fee: 500, recipient: stranger,
+                amountIn: 600 ether, amountOutMinimum: 0, sqrtPriceLimitX96: 0
+            })
+        );
+        // now try to harvest into the wrecked price
+        vm.expectRevert();
+        weir.harvestAndSwap(id, 500, 0);
+        vm.stopPrank();
+    }
+
+    function test_harvestAndSwapRejectsMatchingAsset() public {
+        uint256 id = _open(0, 0);
+        vm.warp(block.timestamp + 30 days);
+        vm.expectRevert();
+        weir.harvestAndSwap(id, 500, 0);
     }
 }

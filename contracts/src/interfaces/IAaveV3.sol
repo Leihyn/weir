@@ -10,6 +10,18 @@ interface IPool {
     ///         Token-2022 scaled-UI balance is rawBalance * multiplier.
     function getReserveNormalizedIncome(address asset) external view returns (uint256);
     function getReserveAToken(address asset) external view returns (address);
+    function ADDRESSES_PROVIDER() external view returns (address);
+}
+
+interface IPoolAddressesProvider {
+    function getPriceOracle() external view returns (address);
+}
+
+/// @notice Aave's Chainlink-backed oracle. Prices are in the pool's base currency
+///         (USD on Base) with BASE_CURRENCY_UNIT decimals.
+interface IAaveOracle {
+    function getAssetPrice(address asset) external view returns (uint256);
+    function BASE_CURRENCY_UNIT() external view returns (uint256);
 }
 
 interface IAToken {

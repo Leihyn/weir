@@ -7,4 +7,7 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-base = "https://mainnet.base.org"
+base = "${BASE_RPC_URL}"
+
+# Public Base RPCs rate-limit heavily on fork tests. drpc.org served archive reads
+# at the pinned block reliably; override with BASE_RPC_URL for a private endpoint.
