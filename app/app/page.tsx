@@ -7,7 +7,7 @@ import { OpenEndowment } from "../components/OpenEndowment";
 import { Endowment, listEndowments, publicClient } from "../lib/chain";
 import { walletFrom } from "../lib/wallet";
 import { weirAbi } from "../lib/abi";
-import { WEIR, PRIVY_APP_ID } from "../lib/config";
+import { WEIR, PRIVY_APP_ID, EXPLORER, NETWORK } from "../lib/config";
 
 export default function Page() {
   const privy = PRIVY_APP_ID ? usePrivy() : null;
@@ -99,13 +99,13 @@ tracked and paid out on close, never stranded.`}</pre>
       </section>
 
       <footer className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted">
-        <span>Aave v3 · Base</span>
+        <span>Aave v3 · {NETWORK.name}</span>
         <span>Privy</span>
         <span>Uniswap</span>
         <span>The Graph</span>
         {WEIR && (
           <a className="underline decoration-dotted hover:text-fg"
-             href={`https://basescan.org/address/${WEIR}`} target="_blank" rel="noreferrer">
+             href={`${EXPLORER}/address/${WEIR}`} target="_blank" rel="noreferrer">
             contract
           </a>
         )}

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Endowment, readIndex, releasable, fmt } from "../lib/chain";
-import { assetByAddress } from "../lib/config";
+import { assetByAddress, EXPLORER} from "../lib/config";
 
 export function EndowmentCard({
   e, onHarvest, busy,
@@ -43,7 +43,7 @@ export function EndowmentCard({
         </div>
         <a
           className="text-xs text-muted hover:text-fg underline decoration-dotted"
-          href={`https://basescan.org/address/${e.agent}`} target="_blank" rel="noreferrer"
+          href={`${EXPLORER}/address/${e.agent}`} target="_blank" rel="noreferrer"
         >
           agent {e.agent.slice(0, 6)}…{e.agent.slice(-4)}
         </a>

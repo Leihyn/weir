@@ -5,9 +5,7 @@ import {Test, console2} from "forge-std/Test.sol";
 import {Weir} from "../src/Weir.sol";
 import {IPool} from "../src/interfaces/IAaveV3.sol";
 import {ISwapRouter02} from "../src/interfaces/IUniswapV3.sol";
-import {
-    MockERC20, MockAavePool, MockAToken, MockOracle, MockAddressesProvider, MockRouter
-} from "./mocks/Mocks.sol";
+import {MockERC20, MockAavePool, MockAToken, MockOracle, MockAddressesProvider, MockRouter} from "./mocks/Mocks.sol";
 
 /// @dev Offline, deterministic, no RPC. Complements the fork suite: the fork tests
 ///      prove Weir works against the real protocol, these prove the arithmetic holds
@@ -64,8 +62,8 @@ contract WeirUnitTest is Test {
 
     /// The core invariant, across the input space: principal never dips below P.
     function testFuzz_principalNeverDipsBelowCommitted(uint96 principal, uint16 growthBps) public {
-        principal = uint96(bound(principal, 1e6, 1e15));       // 1 USDC .. 1e9 USDC
-        growthBps = uint16(bound(growthBps, 1, 5_000));         // up to +50%
+        principal = uint96(bound(principal, 1e6, 1e15)); // 1 USDC .. 1e9 USDC
+        growthBps = uint16(bound(growthBps, 1, 5_000)); // up to +50%
 
         uint256 id = _open(principal);
         _grow(address(usdc), growthBps);

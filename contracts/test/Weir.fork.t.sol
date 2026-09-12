@@ -229,7 +229,12 @@ contract WeirForkTest is Test {
         Vm.Log[] memory logs = vm.getRecordedLogs();
         uint256 floorOut;
         for (uint256 i = 0; i < logs.length; i++) {
-            if (logs[i].topics[0] == keccak256("HarvestedAndSwapped(uint256,address,address,uint256,address,uint256,uint256,uint256,uint256)")) {
+            if (
+                logs[i].topics[0]
+                    == keccak256(
+                        "HarvestedAndSwapped(uint256,address,address,uint256,address,uint256,uint256,uint256,uint256)"
+                    )
+            ) {
                 (,,, floorOut,,) = abi.decode(logs[i].data, (address, uint256, address, uint256, uint256, uint256));
             }
         }
@@ -251,12 +256,18 @@ contract WeirForkTest is Test {
         deal(WETH, stranger, 600 ether);
         vm.startPrank(stranger);
         IERC20(WETH).approve(UNI_ROUTER, type(uint256).max);
-        ISwapRouter02(UNI_ROUTER).exactInputSingle(
-            ISwapRouter02.ExactInputSingleParams({
-                tokenIn: WETH, tokenOut: USDC, fee: 500, recipient: stranger,
-                amountIn: 600 ether, amountOutMinimum: 0, sqrtPriceLimitX96: 0
-            })
-        );
+        ISwapRouter02(UNI_ROUTER)
+            .exactInputSingle(
+                ISwapRouter02.ExactInputSingleParams({
+                    tokenIn: WETH,
+                    tokenOut: USDC,
+                    fee: 500,
+                    recipient: stranger,
+                    amountIn: 600 ether,
+                    amountOutMinimum: 0,
+                    sqrtPriceLimitX96: 0
+                })
+            );
         // now try to harvest into the wrecked price
         vm.expectRevert();
         weir.harvestAndSwap(id, 500, 0);
