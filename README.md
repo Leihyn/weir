@@ -74,9 +74,12 @@ agent receives the full accrual and the caller receives zero.
 ## Quick start
 
 ```bash
-# contracts: 13 tests against live Aave v3 on Base, pinned block, no mocks.
+# offline: 10 unit and fuzz tests, deterministic, no RPC needed
+cd contracts && forge test --match-contract WeirUnitTest -vv
+
+# fork: 13 tests against live Aave v3 on Base at a pinned block, no mocks.
 # --threads 1 is required: concurrent fork requests trigger TLS failures.
-cd contracts && BASE_RPC_URL=https://base.drpc.org forge test --threads 1 -vv
+BASE_RPC_URL=https://base.drpc.org forge test --match-contract WeirForkTest --threads 1 -vv
 
 # app
 cd app && cp env.example .env.local   # fill in NEXT_PUBLIC_*
@@ -90,6 +93,22 @@ WEIR_SUBGRAPH_URL=... WEIR_ADDRESS=0x... node dist/index.js
 cd agent && pnpm install
 AGENT_PRIVATE_KEY=0x... WEIR_ADDRESS=0x... X402_URL=https://... pnpm start
 ```
+
+## Two test suites, on purpose
+
+The **fork suite** proves Weir works against the real protocol: real Aave, real index,
+real Uniswap pool, pinned block, no mocks. The **offline suite** proves the arithmetic
+holds across the whole input space, including states the live chain will not produce on
+demand, and it runs in under half a second with no network.
+
+The mock pool deliberately reproduces Aave's round-half-up scaled burn and funds the
+interest it claims to have earned. An earlier version of it did neither, and was
+silently insolvent in a way that only failed once cumulative withdrawals exceeded the
+original deposits.
+
+The sandwich rejection that the fork suite cannot run on a free RPC is covered offline
+by `test_oracleFloorRejectsBadFill`, where the router fills 10% below oracle and the
+1% floor rejects it even though the caller passed `minOut = 0`.
 
 ## Measured, not quoted
 
@@ -136,6 +155,15 @@ is not the size of the cheque, it is that the agent never dies.
   aTokens actually held, and the invariant `held >= committed` is asserted in tests.
 - Weir depends on Aave v3. If Aave pauses or the reserve is illiquid, withdrawals
   fail and the endowment is frozen until it recovers. This is not mitigated.
+- Weir claims exactly `principal + withheld` on close. Any aToken surplus above that
+  is **not claimable**: there is no sweep function, so a donated aToken or a rounding
+  surplus stays in the contract permanently. It is bounded by the number of harvests
+  and measured at 16 units of USDC after 20 harvests in
+  `test_closePaysWithheldReserveToAgent`. Accepted rather than fixed, because a sweep
+  is a privileged withdrawal path and this design has none.
+- `harvestAndSwap` trusts Aave's oracle for its slippage floor. If that oracle is
+  wrong, the floor is wrong. It is the same oracle Aave prices collateral with, so
+  Weir carries no new oracle assumption, but it is not an independent check.
 - The contracts are **unaudited**. Written during a hackathon.
 
 ## Status
@@ -144,7 +172,7 @@ Built and tested. Not audited, not adversarially reviewed.
 
 | Component | State |
 |---|---|
-| `Weir.sol` | tested: 12 of 13 fork tests pass against live Aave v3 on Base |
+| `Weir.sol` | tested: 22 of 23 tests pass. 10 offline unit and fuzz tests (479ms, no RPC) plus 12 of 13 fork tests against live Aave v3 on Base |
 | Lifecycle e2e | tested: deploy, open, accrue, third-party harvest, solvency, on a Base fork |
 | Subgraph | built: compiles to WASM, not yet deployed to Studio |
 | MCP server | built: compiles and starts |
