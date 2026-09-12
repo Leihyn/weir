@@ -1,0 +1,53 @@
+type Endowment @entity(immutable: false) {
+  id: ID!                      # endowment id
+  owner: Bytes!
+  agent: Bytes!
+  asset: Bytes!
+  principal: BigInt!
+  withheld: BigInt!
+  minPayout: BigInt!
+  minInterval: BigInt!
+  openIndex: BigInt!           # Aave liquidity index when principal was committed
+  lastIndex: BigInt!
+  totalPaid: BigInt!
+  harvestCount: Int!
+  active: Boolean!
+  openedAt: BigInt!
+  openedTx: Bytes!
+  closedAt: BigInt
+  harvests: [Harvest!]! @derivedFrom(field: "endowment")
+}
+
+type Harvest @entity(immutable: true) {
+  id: ID!
+  endowment: Endowment!
+  agent: Bytes!
+  asset: Bytes!
+  amount: BigInt!
+  fromIndex: BigInt!
+  toIndex: BigInt!
+  totalPaidAfter: BigInt!
+  timestamp: BigInt!
+  block: BigInt!
+  tx: Bytes!
+  caller: Bytes!               # proves harvests are called by third parties
+}
+
+"Per-agent rollup so an agent can read its own runway in one query."
+type Agent @entity(immutable: false) {
+  id: ID!                      # agent address
+  totalReceived: BigInt!
+  endowmentCount: Int!
+  harvestCount: Int!
+  firstSeen: BigInt!
+  lastPaidAt: BigInt
+}
+
+type Protocol @entity(immutable: false) {
+  id: ID!
+  endowmentCount: Int!
+  activeEndowmentCount: Int!
+  totalPrincipalCommitted: BigInt!
+  totalYieldPaid: BigInt!
+  harvestCount: Int!
+}

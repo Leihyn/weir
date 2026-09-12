@@ -1,0 +1,13 @@
+.secrets/
+.env
+.env.*
+!env.example
+node_modules/
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+subgraph/generated/
+subgraph/build/
+mcp/dist/
+app/.next/
+.DS_Store

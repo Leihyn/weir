@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #06090d;
+  --color-panel: #0c1218;
+  --color-panel-2: #111a22;
+  --color-line: #1c2a36;
+  --color-fg: #e6edf3;
+  --color-muted: #7d93a6;
+  --color-flow: #2ee6c5;
+  --color-flow-dim: #147f6d;
+  --color-hold: #4a7fb5;
+  --color-warn: #f5a524;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+
+html, body { background: var(--color-ink); color: var(--color-fg); }
+body { font-feature-settings: "tnum" 1, "cv01" 1; }
+
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.panel {
+  background: linear-gradient(180deg, var(--color-panel) 0%, var(--color-panel-2) 100%);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+}
+
+/* the weir: principal held back, only the overflow spills */
+.spill {
+  background: linear-gradient(90deg, transparent, var(--color-flow));
+  animation: spill 2.4s ease-in-out infinite;
+}
+@keyframes spill {
+  0%, 100% { opacity: .25; transform: translateX(-6px); }
+  50%      { opacity: 1;   transform: translateX(6px); }
+}
+
+.tick { animation: tick .5s ease-out; }
+@keyframes tick { from { color: var(--color-flow); } to { color: inherit; } }
