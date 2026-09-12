@@ -129,6 +129,22 @@ keepers, subscription payers, watchers that must exist for years rather than thi
 hard for an hour. At $10,000 it is a real operating budget for a keeper. The point
 is not the size of the cheque, it is that the agent never dies.
 
+## Where the integration code is
+
+For reviewers verifying the integrations:
+
+| Integration | File | Symbol |
+|---|---|---|
+| Aave index, the core mechanic | `contracts/src/Weir.sol` | `_releasable`, `accrued` |
+| Uniswap swap + oracle floor | `contracts/src/Weir.sol` | `harvestAndSwap`, `_oracleFloor` |
+| Uniswap router interface | `contracts/src/interfaces/IUniswapV3.sol` | `ISwapRouter02` |
+| Subgraph schema and mappings | `subgraph/schema.graphql`, `subgraph/src/weir.ts` | `handleOpened`, `handleHarvested` |
+| MCP server (The Graph consumer) | `mcp/src/index.ts` | `weir_sustainable_budget` |
+| Privy auth and wallet | `app/components/Providers.tsx`, `app/components/OpenEndowment.tsx` | `PrivyProvider`, `usePrivy` |
+| Endowed agent | `agent/src/index.ts` | `main` |
+
+Uniswap feedback: [`FEEDBACK.md`](./FEEDBACK.md)
+
 ## Where the sponsor tech sits
 
 - **Aave v3** is the index. The whole mechanic is `getReserveNormalizedIncome`.
