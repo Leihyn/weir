@@ -56,3 +56,21 @@
 
 #### For Next Skill
 demo: video is the highest-value remaining artifact and it clears both KZ-2 remainder and Facet 8.
+
+### hackathon-livetest (V1) — 2026-09-13
+
+#### Done
+- Rendered the live URL with Playwright driving system Chrome. First time the UI has been seen.
+- 14 PASS / 0 FAIL / 2 SKIP. Overall PASS.
+
+#### Defects found and fixed
+- P0: the weir visual never painted its reservoir; the centrepiece read as a stray bar. Rebuilt with inline colour.
+- P1: horizontal scroll on mobile, scrollW 386 vs 375. Right-anchored the live figure.
+- P2: console 404, no favicon. Added app/icon.svg. Console now 0 errors.
+
+#### Blockers for Downstream
+- Privy sign-in still never completed (needs a human to receive an email OTP).
+- Agent still cannot pay the x402 fee (Aave test USDC has no EIP-3009).
+
+#### For Next Skill
+demo: film the index moving, committed <= held, and the agent harvest tx. Do NOT promise a completed x402 payment; the 402 is real, settlement is not.
