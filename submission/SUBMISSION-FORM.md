@@ -102,19 +102,23 @@ generic block, and it survives down to 32px in a gallery of hundreds.*
 
 > `submission/images/weir-cover-1280x720.png`
 
-**Screenshots** — minimum 3 required. Upload all five, in this order. Each one carries a
-single claim on its own, because a judge scrolling a gallery sees it without the video.
+**Screenshots** — minimum 3 required. Upload the first five, in this order; the sixth is a
+spare. Each is a real capture — live app pixels, or verbatim output from a command actually
+run against the deployed contract — rather than a designed card, because the job of these is
+evidence and a slide is not evidence.
 
-1. `images/01-live-app-index-and-solvency.png` — the live app: the Aave index every figure is
-   derived from, and the solvency proof `committed ≤ held` sitting under it
-2. `images/02-endowment-principal-held.png` — the endowment itself: 250,000 held back and
-   never releasable, the accrual spilling over it, and the release anyone may press
-3. `images/03-agent-paid-itself.png` — the agent harvesting its own yield on Base Sepolia,
-   with the transaction and the ledger line, principal unchanged
-4. `images/04-what-can-i-spend-forever.png` — the MCP answering the question an endowed agent
-   actually needs: verdict PERPETUAL, live output from the subgraph
-5. `images/05-how-it-fits-together.png` — the architecture, with each partner on the edge it
+1. `images/01-live-app-index-and-solvency.png` — the live app: the Aave index every figure
+   derives from, with the solvency proof `committed ≤ held` beneath it
+2. `images/02-endowment-principal-held.png` — the endowment: 250,000 held back and never
+   releasable, the accrual spilling over it, and the release anyone may press
+3. `images/03-the-agent-paid-itself.png` — the agent's ledger showing it called `harvest()`
+   itself with the transaction, then the MCP returning `VERDICT: PERPETUAL`
+4. `images/04-the-guarantee-checked-on-chain.png` — `cast` against the deployed contract:
+   committed 250000.000000 ≤ held 250001.654156, accrued 1.654374 USDC, harvestable true
+5. `images/05-how-it-fits-together.png` — the architecture, each partner on the edge it
    genuinely touches
+6. `images/06-tests-including-the-fuzzed-invariant.png` — *spare.* 10 tests passing, including
+   `testFuzz_principalNeverDipsBelowCommitted` at 256 runs: the guarantee itself, fuzzed
 
 ## 3 · Tech stack
 
