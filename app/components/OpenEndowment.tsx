@@ -68,7 +68,7 @@ export function OpenEndowment({ onDone }: { onDone: () => void }) {
   return (
     <div className="panel p-5">
       <h2 className="text-sm font-medium">Endow an agent</h2>
-      <p className="mt-1 text-xs text-muted">
+      <p className="mt-1 text-xs text-faint">
         Principal is supplied to Aave and never leaves. Your agent receives only what the
         index adds. You can close and take all of it back at any time.
       </p>
@@ -103,25 +103,25 @@ export function OpenEndowment({ onDone }: { onDone: () => void }) {
         </button>
       )}
       {!PRIVY_APP_ID && (
-        <p className="mt-2 text-[11px] text-muted">
+        <p className="mt-2 text-[11px] text-faint">
           Using your browser wallet on Base Sepolia. Email sign-in activates when a Privy app
           id is configured.
         </p>
       )}
-      {status && !busy && <p className="mt-2 text-xs text-muted">{status}</p>}
+      {status && !busy && <p className="mt-2 text-xs text-faint">{status}</p>}
     </div>
   );
 }
 
 const input =
-  "w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-flow";
+  "w-full rounded-[var(--radius-sm)] border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-flow";
 const btn =
-  "mt-4 w-full rounded-lg border border-flow-dim bg-flow-dim/20 py-2.5 text-sm text-flow hover:bg-flow-dim/35 transition disabled:opacity-40";
+  "mt-4 w-full rounded-[var(--radius-sm)] border border-flow-lo bg-flow-lo/25 py-2.5 text-sm text-flow hover:bg-flow-lo/45 transition-colors duration-200 disabled:opacity-40";
 
 function Labeled({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
     <label className={full ? "sm:col-span-2" : ""}>
-      <div className="text-[10px] uppercase tracking-wider text-muted mb-1">{label}</div>
+      <div className="text-[10px] uppercase tracking-wider text-faint mb-1">{label}</div>
       {children}
     </label>
   );

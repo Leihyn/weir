@@ -1,53 +1,104 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #06090d;
-  --color-panel: #0c1218;
-  --color-panel-2: #111a22;
-  --color-line: #1c2a36;
-  --color-fg: #e6edf3;
-  --color-muted: #7d93a6;
-  --color-flow: #2ee6c5;
-  --color-flow-dim: #147f6d;
-  --color-hold: #4a7fb5;
-  --color-warn: #f5a524;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  /* ground */
+  --color-ink:      #07090c;
+  --color-surface:  #0d1117;
+  --color-raised:   #131b24;
+  --color-line:     #1d2933;
+
+  /* text */
+  --color-fg:       #eef4f8;
+  --color-dim:      #8ca3b5;
+  --color-faint:    #5b7183;
+
+  /* the two states of money: held, and spilling */
+  --color-hold:     #3f6f9e;
+  --color-hold-lo:  #1b3a56;
+  --color-flow:     #35e7c3;
+  --color-flow-lo:  #0f5f52;
+  --color-warn:     #f2a93b;
+
+  /* one radius pair, per rule 31 */
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --font-display: var(--font-display), Georgia, serif;
+  --font-body:    var(--font-body), ui-sans-serif, sans-serif;
+  --font-mono:    var(--font-mono), ui-monospace, monospace;
 }
 
 html, body { background: var(--color-ink); color: var(--color-fg); }
-body { font-feature-settings: "tnum" 1, "cv01" 1; }
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
 
-.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.display { font-family: var(--font-display); letter-spacing: -0.015em; line-height: 1.08; }
 
 .panel {
-  background: linear-gradient(180deg, var(--color-panel) 0%, var(--color-panel-2) 100%);
+  background: var(--color-surface);
   border: 1px solid var(--color-line);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 }
 
-/* the weir: principal held back, only the overflow spills */
+/* ── the weir ───────────────────────────────────────────────────────────
+   Principal is a held body of water. The crest is fixed. Only what rises
+   above the crest leaves. This is the product, drawn.                    */
+
+.reservoir {
+  background:
+    linear-gradient(180deg, var(--color-hold) 0%, var(--color-hold-lo) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.reservoir::after {           /* surface shimmer, very restrained */
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 2px;
+  background: color-mix(in oklab, var(--color-fg) 45%, transparent);
+  opacity: .5;
+}
+
+.crest { background: var(--color-fg); opacity: .85; }
+
 .spill {
-  background: linear-gradient(90deg, transparent, var(--color-flow));
-  animation: spill 2.4s ease-in-out infinite;
+  background: linear-gradient(180deg,
+    var(--color-flow) 0%,
+    color-mix(in oklab, var(--color-flow) 55%, transparent) 70%,
+    transparent 100%);
+  transform-origin: top;
+  animation: spill 2.6s var(--ease-out) infinite;
 }
 @keyframes spill {
-  0%, 100% { opacity: .25; transform: translateX(-6px); }
-  50%      { opacity: 1;   transform: translateX(6px); }
+  0%, 100% { opacity: .55; transform: scaleY(.93); }
+  50%      { opacity: 1;   transform: scaleY(1); }
 }
 
-.tick { animation: tick .5s ease-out; }
+.pool {
+  background: linear-gradient(180deg,
+    color-mix(in oklab, var(--color-flow) 38%, transparent) 0%,
+    color-mix(in oklab, var(--color-flow) 12%, transparent) 100%);
+}
+
+.tick { animation: tick 600ms var(--ease-out); }
 @keyframes tick { from { color: var(--color-flow); } to { color: inherit; } }
 
-/* Keyboard users must be able to see where they are. The QA gate found exactly one
-   focus style in the whole UI, so this is a single global rule rather than per-element. */
+/* keyboard users must see where they are */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--color-flow);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
-/* Respect users who have asked for less motion: the spill and tick are decorative. */
+@media (hover: none) {
+  .hoverable:hover { background: inherit; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spill, .tick { animation: none; }
-  .spill { opacity: .6; }
+  .spill { opacity: .85; }
 }

@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Endowment, readIndex, releasable, fmt } from "../lib/chain";
-import { assetByAddress, EXPLORER} from "../lib/config";
+import { assetByAddress, EXPLORER } from "../lib/config";
+import { WeirVisual } from "./WeirVisual";
 
 export function EndowmentCard({
   e, onHarvest, busy,
@@ -9,20 +10,14 @@ export function EndowmentCard({
   const asset = assetByAddress(e.asset);
   const dec = asset?.decimals ?? 6;
   const [accrued, setAccrued] = useState<bigint>(0n);
-  const [pulse, setPulse] = useState(0);
 
   useEffect(() => {
     let alive = true;
     const poll = async () => {
       try {
         const i = await readIndex(e.asset);
-        if (!alive) return;
-        setAccrued((prev) => {
-          const next = releasable(e, i);
-          if (next !== prev) setPulse((p) => p + 1);
-          return next;
-        });
-      } catch { /* ignore */ }
+        if (alive) setAccrued(releasable(e, i));
+      } catch { /* rpc hiccup, keep the last good value */ }
     };
     poll();
     const h = setInterval(poll, 4000);
@@ -32,68 +27,60 @@ export function EndowmentCard({
   const floorMet = accrued >= e.minPayout;
   const nextAllowed = Number(e.lastHarvest + e.minInterval) * 1000;
   const timeMet = Date.now() >= nextAllowed;
+  const ready = e.active && floorMet && timeMet;
+
+  const label = !e.active ? "closed"
+    : busy ? "Harvesting…"
+    : !floorMet ? "Below payout floor"
+    : !timeMet ? "Rate-limited"
+    : "Release to the agent";
 
   return (
-    <div className="panel p-5">
-      <div className="flex items-baseline justify-between gap-4">
-        <div className="flex items-baseline gap-3">
-          <span className="num text-muted text-sm">#{e.id.toString()}</span>
-          <span className="text-sm font-medium">{asset?.symbol ?? "?"} endowment</span>
-          {!e.active && <span className="text-xs text-muted">(closed)</span>}
-        </div>
+    <article className="panel p-6 sm:p-8">
+      <header className="flex items-baseline justify-between gap-4 mb-6">
+        <h3 className="display text-xl">
+          Endowment <span className="num text-dim">#{e.id.toString()}</span>
+        </h3>
         <a
-          className="text-xs text-muted hover:text-fg underline decoration-dotted"
+          className="text-xs text-faint hover:text-fg underline decoration-dotted underline-offset-4"
           href={`${EXPLORER}/address/${e.agent}`} target="_blank" rel="noreferrer"
         >
           agent {e.agent.slice(0, 6)}…{e.agent.slice(-4)}
         </a>
-      </div>
+      </header>
 
-      {/* the weir itself: principal held, overflow spilling */}
-      <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3" role="group" aria-label="Principal held versus accrued yield">
-        <div>
-          <div className="text-[11px] uppercase tracking-wider text-muted">principal · held back</div>
-          <div className="num text-2xl text-hold">{fmt(e.principal, dec, dec === 6 ? 2 : 6)}</div>
-        </div>
-        <div className="w-16 h-px spill" aria-hidden />
-        <div className="text-right">
-          <div className="text-[11px] uppercase tracking-wider text-muted">accrued · spillable</div>
-          <div key={pulse} className="num text-2xl text-flow tick">{fmt(accrued, dec)}</div>
-        </div>
-      </div>
+      <WeirVisual
+        principal={fmt(e.principal, dec, dec === 6 ? 2 : 4)}
+        accrued={fmt(accrued, dec, 6)}
+        paid={fmt(e.totalPaid, dec, dec === 6 ? 2 : 4)}
+        symbol={asset?.symbol ?? "?"}
+      />
 
-      <div className="mt-4 grid grid-cols-3 gap-3 text-xs">
-        <Meta label="paid to agent" value={fmt(e.totalPaid, dec, dec === 6 ? 2 : 6)} />
-        <Meta label="payout floor" value={fmt(e.minPayout, dec, dec === 6 ? 2 : 6)} />
-        <Meta label="min interval" value={`${e.minInterval.toString()}s`} />
-      </div>
+      <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-xs border-t border-line pt-5">
+        <div className="flex justify-between">
+          <dt className="text-faint">Payout floor</dt>
+          <dd className="num">{fmt(e.minPayout, dec, dec === 6 ? 2 : 4)}</dd>
+        </div>
+        <div className="flex justify-between">
+          <dt className="text-faint">Min interval</dt>
+          <dd className="num">{e.minInterval.toString()}s</dd>
+        </div>
+      </dl>
 
       <button
-        disabled={!e.active || busy || !floorMet || !timeMet}
+        disabled={!ready || busy}
         onClick={() => onHarvest(e.id)}
-        aria-label="Harvest accrued yield and pay the agent"
-        className="mt-5 w-full rounded-lg border border-line bg-panel-2 py-2.5 text-sm
-                   enabled:hover:border-flow enabled:hover:text-flow transition
-                   disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Release the accrued yield to the agent"
+        className="hoverable mt-6 w-full rounded-[var(--radius-sm)] border border-flow-lo
+                   bg-flow-lo/25 py-3 text-sm text-flow transition-colors duration-200
+                   enabled:hover:bg-flow-lo/45 disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {busy ? "harvesting…"
-          : !floorMet ? "below payout floor · accrual continues"
-          : !timeMet ? "rate-limited by min interval"
-          : "harvest → pay the agent"}
+        {label}
       </button>
-      <p className="mt-2 text-[11px] text-muted leading-relaxed">
-        Anyone may call this. The amount comes from the index and the destination comes
-        from storage, so a caller has nothing to choose and nothing to gain.
+      <p className="mt-3 text-[11px] text-faint leading-relaxed">
+        Anyone may press this. The amount comes from the index and the destination comes from
+        storage, so a caller has nothing to choose and nothing to gain.
       </p>
-    </div>
-  );
-}
-
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-muted">{label}</div>
-      <div className="num">{value}</div>
-    </div>
+    </article>
   );
 }

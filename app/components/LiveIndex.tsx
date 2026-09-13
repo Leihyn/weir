@@ -38,13 +38,24 @@ export function LiveIndex() {
   const idxStr = index ? (Number(index) / Number(RAY)).toFixed(12) : "—";
 
   return (
-    <div className="panel p-4 flex flex-wrap items-center gap-x-8 gap-y-3" role="status" aria-live="polite" aria-label="Live Aave liquidity index">
-      <Field label="Aave v3 Base · USDC liquidity index" value={idxStr} accent />
-      <Field label="observed supply APY" value={apy === null ? "sampling…" : `${apy.toFixed(3)}%`} />
-      <div className="flex-1 min-w-24 h-px spill" aria-hidden />
-      <span className="text-xs text-muted">
-        this index is the multiplier. everything below is derived from it.
-      </span>
+    <div
+      className="panel px-6 py-5 flex flex-wrap items-end gap-x-10 gap-y-4"
+      role="status" aria-live="polite" aria-label="Live Aave liquidity index"
+    >
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.14em] text-faint">
+          Aave v3 liquidity index
+        </div>
+        <div className="num text-2xl text-flow mt-1">{idxStr}</div>
+      </div>
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.14em] text-faint">Observed APY</div>
+        <div className="num text-2xl mt-1">{apy === null ? "sampling…" : `${apy.toFixed(3)}%`}</div>
+      </div>
+      <p className="flex-1 min-w-[16rem] text-xs text-faint leading-relaxed">
+        This number is the multiplier. Every figure below is derived from it, live, on Base
+        Sepolia. Nothing here is seeded.
+      </p>
     </div>
   );
 }
@@ -52,7 +63,7 @@ export function LiveIndex() {
 function Field({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-muted">{label}</div>
+      <div className="text-[11px] uppercase tracking-wider text-faint">{label}</div>
       <div className={`num text-lg ${accent ? "text-flow" : ""}`}>{value}</div>
     </div>
   );
