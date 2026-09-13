@@ -371,7 +371,7 @@ Built and tested. Not audited, not adversarially reviewed.
 |---|---|
 | `Weir.sol` | tested: 22 of 23 tests pass. 10 offline unit and fuzz tests (479ms, no RPC) plus 12 of 13 fork tests against live Aave v3 on Base |
 | Lifecycle e2e | tested: deploy, open, accrue, third-party harvest, solvency, on a Base fork |
-| Subgraph | built: compiles to WASM, not yet deployed to Studio |
+| Subgraph | deployed: indexing Base Sepolia in Graph Studio with no indexing errors, serving endowments, harvests and agents at `https://api.studio.thegraph.com/query/1760272/weir/v0.0.1` |
 | MCP server | built: compiles and starts |
 | Agent | built: typechecks |
 | Frontend | built: production build succeeds |
