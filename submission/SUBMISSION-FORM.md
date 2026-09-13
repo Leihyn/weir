@@ -102,12 +102,19 @@ generic block, and it survives down to 32px in a gallery of hundreds.*
 
 > `submission/images/weir-cover-1280x720.png`
 
-**Screenshots** — minimum 3 required, upload in this order:
+**Screenshots** — minimum 3 required. Upload all five, in this order. Each one carries a
+single claim on its own, because a judge scrolling a gallery sees it without the video.
 
-1. `screenshots/lt4-desktop.png` — the weir visual, solvency panel and live index (1280×1778)
-2. `screenshots/lt4-mobile.png` — mobile, proving it is responsive (375×2726)
-3. `submission/images/weir-cover-1280x720.png` — the claim, as a title card
-4. `screenshots/lt3-desktop.png` — a second desktop state, if a fourth is wanted
+1. `images/01-live-app-index-and-solvency.png` — the live app: the Aave index every figure is
+   derived from, and the solvency proof `committed ≤ held` sitting under it
+2. `images/02-endowment-principal-held.png` — the endowment itself: 250,000 held back and
+   never releasable, the accrual spilling over it, and the release anyone may press
+3. `images/03-agent-paid-itself.png` — the agent harvesting its own yield on Base Sepolia,
+   with the transaction and the ledger line, principal unchanged
+4. `images/04-what-can-i-spend-forever.png` — the MCP answering the question an endowed agent
+   actually needs: verdict PERPETUAL, live output from the subgraph
+5. `images/05-how-it-fits-together.png` — the architecture, with each partner on the edge it
+   genuinely touches
 
 ## 3 · Tech stack
 
