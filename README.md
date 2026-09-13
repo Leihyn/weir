@@ -3,6 +3,13 @@
 **Perpetual subscriptions for AI agents. The yield pays the bills forever;
 the agent can never touch the principal.**
 
+![The mechanic: principal held behind a fixed crest, only the overflow leaving](docs/weir-mechanic.png)
+
+A weir is a low dam. Water is held back to a fixed crest and only the surplus
+spills over. That is the whole product: the principal is the held water, the
+accrual is the overflow, and the crest is arithmetic rather than a rule someone
+can edit.
+
 ## Live on Base Sepolia
 
 | | |
@@ -61,6 +68,26 @@ bill requires.
 
 ## What Weir does
 
+```mermaid
+flowchart LR
+    O(["Owner"]) -->|"commits principal, once"| W["Weir"]
+    W -->|"supplies"| A[("Aave v3")]
+    A -.->|"liquidity index"| W
+    W ==>|"harvest - anyone may call"| G(["Agent"])
+    G -->|"x402"| S[["The bill"]]
+    W -.->|"harvestAndSwap"| U{{"Uniswap"}}
+    U -.->|"USDC"| G
+
+    classDef held fill:#17304a,stroke:#3f6f9e,color:#eef4f8
+    classDef flow fill:#0f5f52,stroke:#35e7c3,color:#eef4f8
+    class A,W held
+    class G,S flow
+```
+
+The solid path is the one that always runs. The dotted Uniswap path only appears
+when an endowment is held in something other than the token the bill is
+denominated in.
+
 An owner commits principal once. The agent may spend the yield and **can never
 touch the principal**, because the released amount is computed from Aave's
 liquidity index rather than chosen by whoever calls the contract. There is no
@@ -105,6 +132,29 @@ nothing is stranded. `test_solvencyNeverLeaksAcrossManyHarvests` runs 48 harvest
 across two endowments and asserts both.
 
 ## Why harvest is permissionless
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Any caller
+    participant W as Weir
+    participant A as Aave v3
+    actor G as Agent wallet
+
+    C->>W: harvest(id)
+    Note over C,W: the caller passes an id.<br/>there is no amount parameter.
+    W->>A: getReserveNormalizedIncome(asset)
+    A-->>W: i1
+    Note over W: amount = P * delta i / i0<br/>derived, not chosen
+    W->>A: withdraw(amount + reserve)
+    A-->>W: USDC
+    W->>G: transfer(amount)
+    Note over W,G: destination read from storage,<br/>never from the caller
+```
+
+A caller has nothing to choose and nothing to gain, which is why this needs no
+keeper, no relayer, and no liveness dependency on us. The agent can call it and
+pay itself, and it has.
 
 Anyone may call `harvest(id)`. The amount comes from the index and the destination
 comes from storage, so a caller has nothing to choose and nothing to gain. There
@@ -189,6 +239,11 @@ For reviewers verifying the integrations:
 Uniswap feedback: [`FEEDBACK.md`](./FEEDBACK.md)
 
 ## Where the sponsor tech sits
+
+![Architecture: owner commits, Weir supplies Aave, the index returns, harvest releases to the agent, the agent pays a bill over x402](docs/architecture.png)
+
+Each partner sits on the edge it actually touches. A partner that touches no
+edge is not in the diagram and is not claimed.
 
 Claimed only where the integration is real. A sponsor listed without working code is worse
 than one not listed, so this section is deliberately short.

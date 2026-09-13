@@ -14,3 +14,14 @@ app/.next/
 video/node_modules/
 video/out/
 video/public/raw/
+
+# Internal build-pipeline artefacts. Point-in-time QA snapshots and
+# form-filling working notes: not part of the project, and stale the moment
+# they are written.
+VERIFY-REPORT.md
+LIVETEST-REPORT.md
+PULSE.md
+.verify-state.json
+.livetest-state.json
+.conductor-state.json
+submission/
