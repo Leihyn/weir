@@ -21,7 +21,8 @@ export const TOTAL_SECONDS = 158.5;   // matches the recorded narration exactly
 export const SCENES = {
   hook: 15.4,
   mechanism: 23.1,
-  weir: 30.0,
+  weirDraw: 13.0,
+  weirApp: 17.0,
   proof: 25.7,
   permissionless: 25.7,
   stack: 25.7,

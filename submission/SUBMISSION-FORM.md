@@ -122,19 +122,68 @@ evidence and a slide is not evidence.
 
 ## 3 · Tech stack
 
-> Solidity, Foundry, Aave v3, Uniswap v3, The Graph (Subgraph Studio), Next.js, TypeScript, viem, Privy, Model Context Protocol (MCP), x402, Base Sepolia, Vercel
+The form splits this across seven pickers. Tick only what is genuinely in the repo — it is
+public, and an overclaim here is checkable in seconds.
 
----
+**Ethereum developer tools**
+
+> Foundry · The Graph · viem · wagmi · Privy
+
+*No Hardhat and no OpenZeppelin: the contract imports hand-written minimal interfaces only, and
+`forge-std` is the sole vendored library.*
+
+**Blockchain networks**
+
+> Base (and Base Sepolia if offered separately)
+
+*Deployed to Base Sepolia. Base mainnet addresses exist in `Networks.sol` but nothing is
+deployed there, so do not claim mainnet.*
+
+**Programming languages**
+
+> Solidity · TypeScript · AssemblyScript
+
+*AssemblyScript is not padding — the subgraph mappings compile to `wasm/assemblyscript`.*
+
+**Web frameworks**
+
+> Next.js · React
+
+**Databases**
+
+> None
+
+*There is no database. The subgraph is the index layer and is already declared under developer
+tools.*
+
+**Design tools**
+
+> None
+
+*No Figma. The UI was built directly in Tailwind; the video in Remotion. Both are listed below.*
+
+**Other technologies**
+
+> Model Context Protocol (MCP), x402, Aave v3, Uniswap v3, Tailwind CSS, Remotion, TanStack Query, Vercel, Sourcify, pnpm
+
+**Describe how AI tools were used**
+
+> Claude Code (Opus 5) was the implementing agent for effectively all source code, directed conversationally by the solo human team member across one continuous session of 24 commits. It wrote the Solidity contract and its Foundry tests, the Next.js app, the subgraph mappings, the MCP server, and the TypeScript agent. The human supplied the product direction, the design judgement, every credential and funded key, the corrections, and the video narration, which is a human recording and not synthesised.
+>
+> The AI also introduced eight bugs during the build that were later caught, four of them only by fork tests running against live Aave rather than by reading the code — including a rounding leak where Aave's round-half-up burn left the balance a hair below principal. Full per-file disclosure of what was AI-written, what the human contributed, and each bug introduced and caught is in AI-USE.md in the repo.
 
 ## 4 · Select prizes
 
-Maximum three. Per-partner "how you used it" and feedback text is in `PARTNER-PRIZES.md`.
+Full answers, including the per-partner "how are you using this" text, code links, ease
+ratings and sponsor feedback, are in **`SELECT-PRIZES.md`** (and its .docx).
 
-1. **The Graph** — covers AI Tooling/Use Case and Composable
-2. **Uniswap Foundation** — Best Uniswap Stack Contribution
-3. **Privy** — Best financial flow, and Best B2B financial product
+- Track: **Building from Scratch**
+- Submission type: **Top 10 Finalist & Partner Prizes** — note this commits you to Live Judging
+  on Mon 14 Sep, 12:00 pm EDT
+- Partners: **The Graph**, **Privy**, **Uniswap Foundation**
 
----
+Arc's prizes fit this project better than two of the three above, and we are not applying —
+the reasoning is in **`ARC.md`**.
 
 ## 5 · Video
 

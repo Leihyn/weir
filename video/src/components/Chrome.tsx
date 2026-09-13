@@ -1,5 +1,13 @@
 import React from "react";
-import { spring, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  OffthreadVideo,
+  interpolate,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { C } from "../constants";
 import { sans, mono, serif } from "../fonts";
 import { AmbientWeir, Grain, Rail, Vignette } from "./Atmosphere";
@@ -208,3 +216,76 @@ export const Browser: React.FC<{ children: React.ReactNode; url: string; width: 
     <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>{children}</div>
   </div>
 );
+
+/**
+ * A scene whose subject is the running product. The page fills the frame — a
+ * small inset is unreadable at playback size, which is the whole reason to show
+ * a UI — with gradients top and bottom so the overlaid words and the caption
+ * line stay legible over whatever the page is doing underneath.
+ */
+export const AppScene: React.FC<{
+  index: number;
+  kicker: string;
+  /** omitted on purpose for app scenes: the captions carry the words, and a headline over a live UI collides with it */
+  headline?: string;
+  /** where in the screen recording to start, in seconds */
+  startSeconds: number;
+}> = ({ index, kicker, headline, startSeconds }) => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  const inA = spring({ frame, fps, from: 0, to: 1, config: { damping: 30 } });
+  const outA = interpolate(frame, [durationInFrames - 10, durationInFrames], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <AbsoluteFill style={{ background: C.ink, overflow: "hidden" }}>
+      <AbsoluteFill style={{ opacity: inA * outA }}>
+        <OffthreadVideo
+          src={staticFile("screen.mp4")}
+          startFrom={Math.round(30 * startSeconds)}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          muted
+        />
+      </AbsoluteFill>
+
+      {/* legibility for the overlay and the caption line */}
+      <AbsoluteFill
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(7,9,12,.92) 0%, rgba(7,9,12,.45) 26%, rgba(7,9,12,0) 46%, rgba(7,9,12,.55) 78%, rgba(7,9,12,.92) 100%)",
+        }}
+      />
+
+      <div style={{ position: "absolute", left: 96, top: 150, color: C.fg, fontFamily: sans }}>
+        <In>
+          <Kicker>{kicker}</Kicker>
+        </In>
+        {headline ? (
+        <In delay={8}>
+          <h1
+            style={{
+              fontFamily: serif,
+              fontSize: 62,
+              lineHeight: 1.06,
+              margin: 0,
+              fontWeight: 400,
+              letterSpacing: "-0.015em",
+              whiteSpace: "pre-line",
+              textShadow: "0 2px 24px rgba(0,0,0,.7)",
+            }}
+          >
+            {headline}
+          </h1>
+        </In>
+        ) : null}
+      </div>
+
+      <Wordmark />
+      <Rail index={index} />
+      <Vignette />
+      <Grain opacity={0.03} />
+    </AbsoluteFill>
+  );
+};
