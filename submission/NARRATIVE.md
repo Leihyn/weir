@@ -48,6 +48,39 @@ agent actually needs: not "what is my balance" but "what can I spend forever?"
 Live on Base Sepolia. The agent has paid itself. The principal is unchanged.
 ```
 
+
+---
+
+## What the destination can be *(design rationale, not roadmap)*
+
+Weir does not pay bills. It releases USDC to a **destination address**, and the owner sets
+that address. That is the entire extensibility surface, and it is why `open()` takes a
+destination rather than hardcoding one.
+
+An address can be:
+
+- **an agent's spending wallet**, paying x402-gated services per call — this is what we demo
+- **a merchant or contract address**, for direct on-chain payment
+- **an off-ramp provider's deposit address with a payment reference**, which is how a local
+  fiat bill actually gets paid
+
+The third needs a licensed payment partner. That is a compliance relationship, not an
+integration, so we did not fake one. But it needs **no contract change**: `setAgent`
+repoints the destination, and the live endowment already proves the destination is a
+parameter rather than a constant.
+
+## Where this goes
+
+The mechanism does not care what the recurring obligation is. For an agent it is inference,
+RPC and metered data. For a person it is electricity, school fees, a subscription. The
+**cap** matters most in the agent case, because agents get compromised. The **perpetuity**
+matters most in the human case, because bills outlive salaries. Same primitive, two reasons.
+
+Dollar-denominated principal with spendable yield is worth more where local savings are
+negative in real terms, which is most of the world. The last mile to fiat is a commodity
+with many providers. The part that did not exist is **a release schedule an agent cannot
+outrun**, and that is the part we built.
+
 ---
 
 ## One-sentence pitch (verify Facet 5.1)

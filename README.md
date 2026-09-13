@@ -200,6 +200,28 @@ into a dead demo.
 **Not claimed:** Hedera, Arc, 1inch, ENS, Ledger, Chainlink, World, Bazantic. Nothing was
 built against them.
 
+## What the destination can be
+
+Weir does not pay bills. It releases USDC to a **destination address** that the owner sets.
+That is the whole extensibility surface, and it is why `open()` takes a destination instead
+of hardcoding one.
+
+| Destination | Pays for | Status |
+|---|---|---|
+| An agent's spending wallet | x402-gated services, per call | demonstrated |
+| A merchant or contract address | direct on-chain payment | works today, not demoed |
+| An off-ramp provider's deposit address plus a reference | a local fiat bill | needs a licensed partner |
+
+The third needs a compliance relationship rather than an integration, so there is no fake
+one here. It requires **no contract change**: `setAgent` repoints the destination, and the
+live endowment already proves the destination is a parameter.
+
+The mechanism does not care what the recurring obligation is. For an agent it is inference,
+RPC and metered data; for a person it is electricity or a subscription. The cap matters most
+for agents, because agents get compromised. The perpetuity matters most for people, because
+bills outlive salaries. The last mile to fiat is a commodity with many providers; the part
+that did not exist is a release schedule an agent cannot outrun.
+
 ## Trust model, stated plainly
 
 - The owner can close an endowment at any time and recover all principal.

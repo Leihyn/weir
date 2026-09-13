@@ -45,17 +45,18 @@ export default function Page() {
           <span className="text-sm tracking-[0.2em] uppercase text-muted">Weir</span>
         </div>
         <h1 className="mt-6 text-3xl sm:text-4xl font-medium leading-tight max-w-2xl">
-          An endowment your agent <span className="text-flow">cannot outspend</span>.
+          Your agent&apos;s bills <span className="text-flow">outlive its budget</span>.
         </h1>
         <p className="mt-4 max-w-2xl text-muted leading-relaxed">
-          Fund an autonomous agent once. It may spend the yield forever and can never touch
-          the principal, because the released amount is computed from Aave&apos;s liquidity
-          index rather than chosen by whoever calls the contract. A spending cap enforced by
-          arithmetic, not by a policy someone can edit.
+          A $12/month API subscription funded with $500 dies in forty months, and so does
+          whatever the agent was maintaining. Recurring costs do not stop. Budgets do.
         </p>
-        <p className="mt-3 max-w-2xl text-sm text-muted">
-          An agent given a $1,000 lump sum and a $1/day budget dies in a thousand days.
-          An agent given a $1,000 endowment runs indefinitely.
+        <p className="mt-3 max-w-2xl text-muted leading-relaxed">
+          Weir endows the bill instead of funding the agent. Principal goes into Aave once;
+          the agent is paid only what the index produces, forever, and can never touch the
+          principal, because the released amount is computed from the index rather than
+          chosen by whoever calls the contract. Compromise the agent and it still cannot
+          take more than the accrual.
         </p>
       </header>
 

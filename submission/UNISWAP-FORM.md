@@ -50,11 +50,15 @@ calls on-chain itself, so option 1 is the accurate match.
 ## What did you build? *(required)*
 
 ```
-Weir — a perpetual endowment for autonomous agents on Base. An owner commits
-principal to Aave once; the agent may spend only the yield and can never touch
-principal, because the released amount is derived from Aave's liquidity index
-rather than chosen by the caller. Uniswap SwapRouter02 converts a WETH
-endowment's yield into spendable USDC via harvestAndSwap().
+Weir endows an AI agent's recurring bills. An owner commits principal to Aave
+once; the agent is paid only what the index produces, forever, and can never
+touch the principal, because the released amount is derived from Aave's
+liquidity index rather than chosen by the caller.
+
+Agents' bills are denominated in USDC, but an endowment may be held in anything.
+That is where Uniswap sits: harvestAndSwap() routes the accrued yield of a WETH
+endowment through SwapRouter02 into the USDC the bills are actually paid in, so
+the owner picks the asset and the agent still gets paid in something spendable.
 Full write-up: https://github.com/Leihyn/weir/blob/main/FEEDBACK.md
 ```
 
