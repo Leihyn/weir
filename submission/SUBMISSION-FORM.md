@@ -88,12 +88,26 @@ raise, only exists in the agent framing. Technicality defends itself on the test
 
 ## 2 · Images
 
-Upload in this order:
+All three fields are required. Files are in `submission/images/`.
 
-1. `screenshots/lt4-desktop.png` — the weir visual, solvency panel and live index
-2. `screenshots/lt4-mobile.png` — mobile, proving it is responsive
+**Logo** — square, 512×512
 
----
+> `submission/images/weir-logo-512.png`
+
+*A weir seen head-on: water held to a fixed crest, spilling through the notch cut in it. The
+notch is the ownable part — it is what makes the silhouette read as a weir rather than a
+generic block, and it survives down to 32px in a gallery of hundreds.*
+
+**Cover image** — 16:9, 1280×720
+
+> `submission/images/weir-cover-1280x720.png`
+
+**Screenshots** — minimum 3 required, upload in this order:
+
+1. `screenshots/lt4-desktop.png` — the weir visual, solvency panel and live index (1280×1778)
+2. `screenshots/lt4-mobile.png` — mobile, proving it is responsive (375×2726)
+3. `submission/images/weir-cover-1280x720.png` — the claim, as a title card
+4. `screenshots/lt3-desktop.png` — a second desktop state, if a fourth is wanted
 
 ## 3 · Tech stack
 

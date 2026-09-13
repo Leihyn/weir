@@ -12,6 +12,7 @@ import { C } from "../constants";
 import { Bg, Browser, In, Kicker, Head, Body, Mono } from "../components/Chrome";
 import { Grain, Rail, Vignette } from "../components/Atmosphere";
 import { WeirIllustration } from "../components/WeirIllustration";
+import { FlowDiagram } from "../components/Flow";
 import { mono, sans, serif } from "../fonts";
 
 /** 1 — the problem, stated as an arithmetic fact rather than a worry. */
@@ -91,82 +92,144 @@ export const Mechanism: React.FC = () => {
 };
 
 /**
- * 3 — the illustration carries this one, so it runs the full width of the frame
- * and the ambient water steps aside rather than drawing a second weir.
+ * 3 — the drawing and the page it describes, side by side. The illustration on
+ * its own was abstract; putting the live endowment card next to it is what makes
+ * the point that this is a real running product, not a diagram.
  */
-export const TheWeir: React.FC = () => (
-  <AbsoluteFill>
-    <Bg index={2} ambient={false}>
-      <In>
-        <Kicker>Principal held · overflow released</Kicker>
-      </In>
-      <div style={{ marginTop: 26 }}>
-        <WeirIllustration principal="250,000" spilling="0.896609" paid="0.01" width={1660} />
-      </div>
-      <In delay={50}>
-        <div style={{ marginTop: 44, fontSize: 26, color: C.faint }}>
-          Live on Base Sepolia. Climbing roughly 116 units a second, as you watch.
+export const TheWeir: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const app = spring({ frame: frame - 60, fps, from: 0, to: 1, config: { damping: 30 } });
+  return (
+    <AbsoluteFill>
+      <Bg index={2} ambient={false}>
+        <In>
+          <Kicker>Principal held · overflow released</Kicker>
+        </In>
+        <div style={{ marginTop: 24 }}>
+          <WeirIllustration principal="250,000" spilling="0.896609" paid="0.01" width={1010} />
         </div>
-      </In>
-    </Bg>
-  </AbsoluteFill>
-);
-
-/** 4 — the proof, shown as the inequality itself. */
-export const Proof: React.FC = () => (
-  <AbsoluteFill>
-    <Bg index={3}>
-      <In>
-        <Kicker>The proof, not the claim</Kicker>
-      </In>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 60, marginTop: 44 }}>
-        <In delay={10}>
-          <div>
-            <div
-              style={{
-                fontSize: 16,
-                letterSpacing: 4,
-                textTransform: "uppercase",
-                color: C.faint,
-              }}
-            >
-              Principal committed
-            </div>
-            <Mono color={C.hold} size={72}>
-              250000.00
-            </Mono>
+        <In delay={54}>
+          <div style={{ marginTop: 40, fontSize: 25, color: C.faint, maxWidth: 1000 }}>
+            Live on Base Sepolia. Climbing roughly 116 units a second, as you watch.
           </div>
+        </In>
+      </Bg>
+
+      {/* the same mechanic, running */}
+      <div
+        style={{
+          position: "absolute",
+          right: 96,
+          top: 214,
+          opacity: app,
+          transform: `translateX(${(1 - app) * 26}px)`,
+        }}
+      >
+        <Browser url="weir-khaki.vercel.app" width={700} height={632}>
+          <OffthreadVideo
+            src={staticFile("screen.mp4")}
+            startFrom={30 * 38}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+            muted
+          />
+        </Browser>
+        <div
+          style={{
+            fontFamily: mono,
+            fontSize: 15,
+            color: C.faint,
+            letterSpacing: 1.5,
+            marginTop: 16,
+            textAlign: "center",
+          }}
+        >
+          THE SAME NUMBERS, ON THE LIVE PAGE
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * 4 — the proof. The inequality is the claim; the page beside it is the claim
+ * being true right now, which is the part a judge can check themselves.
+ */
+export const Proof: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const app = spring({ frame: frame - 40, fps, from: 0, to: 1, config: { damping: 30 } });
+  return (
+    <AbsoluteFill>
+      <Bg index={3} ambient={false}>
+        <In>
+          <Kicker>The proof, not the claim</Kicker>
+        </In>
+        <In delay={10}>
+          <div style={{ fontSize: 16, letterSpacing: 4, textTransform: "uppercase", color: C.faint }}>
+            Principal committed
+          </div>
+          <Mono color={C.hold} size={76}>
+            250000.00
+          </Mono>
         </In>
         <In delay={22}>
-          <div style={{ fontSize: 60, color: C.faint, paddingBottom: 10 }}>≤</div>
-        </In>
-        <In delay={30}>
-          <div>
-            <div
-              style={{
-                fontSize: 16,
-                letterSpacing: 4,
-                textTransform: "uppercase",
-                color: C.faint,
-              }}
-            >
-              aTokens actually held
-            </div>
-            <Mono color={C.flow} size={72}>
-              250000.89
-            </Mono>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, margin: "14px 0 8px" }}>
+            <span style={{ fontFamily: mono, fontSize: 40, lineHeight: 1, color: C.flow }}>&#8804;</span>
+            <span style={{ fontFamily: mono, fontSize: 17, color: C.faint, letterSpacing: 1 }}>
+              EVERY BLOCK
+            </span>
           </div>
         </In>
+        <In delay={30}>
+          <div style={{ fontSize: 16, letterSpacing: 4, textTransform: "uppercase", color: C.faint }}>
+            aTokens actually held
+          </div>
+          <Mono color={C.flow} size={76}>
+            250000.89
+          </Mono>
+        </In>
+        <In delay={48}>
+          <Body width={860}>
+            If that ever inverted the guarantee would be a lie, so the app shows it rather than
+            asserting it.
+          </Body>
+        </In>
+      </Bg>
+
+      <div
+        style={{
+          position: "absolute",
+          right: 96,
+          top: 190,
+          opacity: app,
+          transform: `translateX(${(1 - app) * 26}px)`,
+        }}
+      >
+        <Browser url="weir-khaki.vercel.app" width={760} height={680}>
+          <OffthreadVideo
+            src={staticFile("screen.mp4")}
+            startFrom={30 * 72}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+            muted
+          />
+        </Browser>
+        <div
+          style={{
+            fontFamily: mono,
+            fontSize: 15,
+            color: C.faint,
+            letterSpacing: 1.5,
+            marginTop: 16,
+            textAlign: "center",
+          }}
+        >
+          SOLVENCY, READ FROM THE CHAIN
+        </div>
       </div>
-      <In delay={48}>
-        <Body>
-          Committed is less than or equal to held, every block. If that ever inverted the guarantee
-          would be a lie, so it is shown rather than asserted.
-        </Body>
-      </In>
-    </Bg>
-  </AbsoluteFill>
-);
+    </AbsoluteFill>
+  );
+};
 
 /**
  * 5 — real footage of the live app. The page sits in a browser window on the
@@ -250,47 +313,36 @@ export const Permissionless: React.FC = () => {
   );
 };
 
-/** 6 — what each partner actually does, one line each. */
-export const Stack: React.FC = () => {
-  const rows: [string, string][] = [
-    ["Aave v3", "the liquidity index every figure is derived from"],
-    ["The Graph", "indexes every release; the agent asks what it can spend forever"],
-    ["Uniswap", "converts a WETH endowment's yield into the USDC bills are paid in"],
-    ["Privy", "how an owner signs in and commits principal"],
-  ];
-  return (
-    <AbsoluteFill>
-      <Bg index={5}>
-        <In>
-          <Kicker>Built on</Kicker>
-        </In>
-        <div style={{ marginTop: 34, maxWidth: 1130 }}>
-          {rows.map(([name, what], i) => (
-            <In key={name} delay={10 + i * 9}>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 34,
-                  alignItems: "baseline",
-                  padding: "20px 0",
-                  borderBottom: `1px solid ${C.line}`,
-                }}
-              >
-                <span style={{ fontFamily: serif, fontSize: 40, minWidth: 230 }}>{name}</span>
-                <span style={{ fontSize: 25, color: C.dim }}>{what}</span>
-              </div>
-            </In>
-          ))}
-        </div>
-        <In delay={54}>
-          <div style={{ marginTop: 38, fontFamily: mono, fontSize: 24, color: C.faint }}>
-            23 tests · 13 against live Aave on a pinned fork · contract verified
-          </div>
-        </In>
-      </Bg>
-    </AbsoluteFill>
-  );
-};
+/**
+ * 6 — how it actually fits together. A list of partner names says nothing about
+ * whether the integration is real, so this draws the edges instead and hangs
+ * each partner off the edge it genuinely touches.
+ */
+export const Stack: React.FC = () => (
+  <AbsoluteFill>
+    <Bg index={5} ambient={false}>
+      <span />
+    </Bg>
+    <div style={{ position: "absolute", left: 96, top: 150 }}>
+      <In>
+        <Kicker>How it fits together</Kicker>
+      </In>
+    </div>
+    <FlowDiagram />
+    <div
+      style={{
+        position: "absolute",
+        left: 96,
+        bottom: 96,
+        fontFamily: mono,
+        fontSize: 22,
+        color: C.faint,
+      }}
+    >
+      23 tests · 13 against live Aave on a pinned fork · contract verified
+    </div>
+  </AbsoluteFill>
+);
 
 /** 7 — land on the one sentence worth remembering. */
 export const Close: React.FC = () => (
