@@ -2,6 +2,32 @@
 
 **An endowment your agent cannot outspend.**
 
+## Live on Base Sepolia
+
+| | |
+|---|---|
+| Weir contract | [`0xE8b6f6C5cF6dB470c3a3Fe18a1977e55aC0Eb645`](https://sepolia.basescan.org/address/0xE8b6f6C5cF6dB470c3a3Fe18a1977e55aC0Eb645) |
+| Endowment #1 | 250,000 test USDC, floor $0.01, min interval 60s |
+| Agent | [`0xD3EFF0247E7b61d75A34e1965939e736fe69C4c2`](https://sepolia.basescan.org/address/0xD3EFF0247E7b61d75A34e1965939e736fe69C4c2) |
+| Aave v3 Pool | `0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27` |
+| Uniswap SwapRouter02 | `0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4` |
+
+**First live harvest**, by the agent paying itself:
+[`0xeb03555c77939a47e728ef5337dc11abd83028597e06e31163dddc6d3cf22830`](https://sepolia.basescan.org/tx/0xeb03555c77939a47e728ef5337dc11abd83028597e06e31163dddc6d3cf22830)
+
+```
+amount released : 0.016172 USDC
+agent balance   : 0 -> 16,615
+solvency        : committed 250000000000   held 250000000222
+```
+
+Principal exactly intact. The agent chose nothing: not the amount, not the destination.
+
+Base Sepolia is deliberate, not a compromise. A $20 mainnet endowment throws off $0.002/day,
+which is invisible. Here the faucet is permissionless, so a 250,000 endowment throws off
+about $10/day and the mechanic is legible. Aave v3 on Base Sepolia is a real market with a
+real, moving index (USDC 1.4618% APR, WETH 19.05% APY), not a mock.
+
 ## The problem
 
 You give an autonomous agent $1,000 and a $1/day budget. In a thousand days it is dead.

@@ -20,11 +20,14 @@ contract Fund is Script {
         Networks.Config memory cfg = Networks.forChain(block.chainid);
         require(cfg.aaveFaucet != address(0), "Fund: no faucet on this network (mainnet?)");
 
-        address me = msg.sender;
         uint256 usdcAmount = vm.envOr("USDC_AMOUNT", uint256(250_000e6));
         uint256 wrapAmount = vm.envOr("WRAP_WEI", uint256(0.002 ether));
 
         vm.startBroadcast();
+        // msg.sender read BEFORE startBroadcast is forge's default script sender, not the
+        // signer. Minting to it sends the tokens to an address you do not control, and the
+        // script still reports success. Read the real broadcaster instead.
+        (, address me,) = vm.readCallers();
         IAaveFaucet(cfg.aaveFaucet).mint(cfg.usdc, me, usdcAmount);
         if (wrapAmount > 0) IWETH(cfg.weth).deposit{value: wrapAmount}();
         vm.stopBroadcast();
