@@ -19,7 +19,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
-        loginMethods: ["email", "wallet", "google"],
+        // Only methods actually enabled on the Privy app. Requesting "google" when the
+        // dashboard has not enabled it throws "Login with Google not allowed" at runtime.
+        loginMethods: ["email", "wallet"],
         defaultChain: base,
         supportedChains: [base],
         embeddedWallets: { createOnLogin: "users-without-wallets" },
