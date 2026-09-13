@@ -50,7 +50,7 @@ export function EndowmentCard({
       </div>
 
       {/* the weir itself: principal held, overflow spilling */}
-      <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+      <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3" role="group" aria-label="Principal held versus accrued yield">
         <div>
           <div className="text-[11px] uppercase tracking-wider text-muted">principal · held back</div>
           <div className="num text-2xl text-hold">{fmt(e.principal, dec, dec === 6 ? 2 : 6)}</div>
@@ -71,6 +71,7 @@ export function EndowmentCard({
       <button
         disabled={!e.active || busy || !floorMet || !timeMet}
         onClick={() => onHarvest(e.id)}
+        aria-label="Harvest accrued yield and pay the agent"
         className="mt-5 w-full rounded-lg border border-line bg-panel-2 py-2.5 text-sm
                    enabled:hover:border-flow enabled:hover:text-flow transition
                    disabled:opacity-40 disabled:cursor-not-allowed"

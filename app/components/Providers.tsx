@@ -23,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultChain: base,
         supportedChains: [base],
         embeddedWallets: { createOnLogin: "users-without-wallets" },
-        appearance: { theme: "dark", accentColor: "#2ee6c5", logo: undefined },
+        appearance: { theme: "dark", accentColor: "#2ee6c5" /* Privy config needs a literal, not a CSS var */, logo: undefined },
       }}
     >
       <QueryClientProvider client={qc}>{children}</QueryClientProvider>

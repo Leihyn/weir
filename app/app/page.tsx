@@ -122,10 +122,10 @@ tracked and paid out on close, never stranded.`}</pre>
 function Mark() {
   // a weir: water held back on the left, spilling over the crest on the right
   return (
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
-      <path d="M2 7h10v12H2z" fill="#4a7fb5" opacity=".45" />
-      <path d="M12 7v12" stroke="#e6edf3" strokeWidth="1.5" />
-      <path d="M12 9c4 0 4 4 12 4" stroke="#2ee6c5" strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" role="img" aria-label="Weir">
+      <path d="M2 7h10v12H2z" fill="var(--color-hold)" opacity=".45" />
+      <path d="M12 7v12" stroke="var(--color-fg)" strokeWidth="1.5" />
+      <path d="M12 9c4 0 4 4 12 4" stroke="var(--color-flow)" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }

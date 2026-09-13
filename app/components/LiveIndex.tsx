@@ -38,7 +38,7 @@ export function LiveIndex() {
   const idxStr = index ? (Number(index) / Number(RAY)).toFixed(12) : "—";
 
   return (
-    <div className="panel p-4 flex flex-wrap items-center gap-x-8 gap-y-3">
+    <div className="panel p-4 flex flex-wrap items-center gap-x-8 gap-y-3" role="status" aria-live="polite" aria-label="Live Aave liquidity index">
       <Field label="Aave v3 Base · USDC liquidity index" value={idxStr} accent />
       <Field label="observed supply APY" value={apy === null ? "sampling…" : `${apy.toFixed(3)}%`} />
       <div className="flex-1 min-w-24 h-px spill" aria-hidden />

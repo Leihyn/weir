@@ -37,3 +37,17 @@ body { font-feature-settings: "tnum" 1, "cv01" 1; }
 
 .tick { animation: tick .5s ease-out; }
 @keyframes tick { from { color: var(--color-flow); } to { color: inherit; } }
+
+/* Keyboard users must be able to see where they are. The QA gate found exactly one
+   focus style in the whole UI, so this is a single global rule rather than per-element. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-flow);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Respect users who have asked for less motion: the spill and tick are decorative. */
+@media (prefers-reduced-motion: reduce) {
+  .spill, .tick { animation: none; }
+  .spill { opacity: .6; }
+}
