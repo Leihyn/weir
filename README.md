@@ -1,6 +1,7 @@
 # Weir
 
-**An endowment your agent cannot outspend.**
+**Perpetual subscriptions for AI agents. The yield pays the bills forever;
+the agent can never touch the principal.**
 
 ## Live on Base Sepolia
 
@@ -30,17 +31,33 @@ real, moving index (USDC 1.4618% APR, WETH 19.05% APY), not a mock.
 
 ## The problem
 
-You give an autonomous agent $1,000 and a $1/day budget. In a thousand days it is dead.
+Your agent has a $12/month API subscription. You fund it with $500. In forty months it is
+dead, and so is whatever it was maintaining.
 
-Every funded agent today is mortal by construction. You hand it a lump sum and a
-spending cap, and the cap is a policy: a session key that drains, an allowance
-someone can raise, a config line in a service you hope nobody edits. The agent
-spends principal because principal is the only thing it has. When the money is
-gone, the agent stops, and whatever it was maintaining stops with it.
+**Recurring costs do not stop. Budgets do.**
 
-There is a financial instrument for exactly this problem and it is six hundred
-years old. A university does not spend its endowment. It spends what the
-endowment throws off, forever. Nothing on-chain does this for agents.
+Every funded agent today is mortal by construction. You hand it a lump sum and a spending
+cap, and the cap is a policy: a session key that drains, an allowance someone can raise, a
+config line in a service you hope nobody edits. The agent spends principal because principal
+is the only thing it has.
+
+There is a six-hundred-year-old instrument for exactly this. A university does not spend its
+endowment; it spends what the endowment throws off, forever. Nothing on-chain does that for
+an agent.
+
+### What it costs to endow a bill
+
+At Aave's live mainnet USDC rate of 3.56% APY:
+
+| Recurring bill | Principal that endows it forever |
+|---|---|
+| $0.10/day of API calls | ~$1,025 |
+| $12/month subscription | ~$4,045 |
+| $1/day RPC plan | ~$10,250 |
+| $5/day of inference | ~$51,300 |
+
+The yield is not small. The **bill** is small, and the principal is simply whatever that
+bill requires.
 
 ## What Weir does
 
