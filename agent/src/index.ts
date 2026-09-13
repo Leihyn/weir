@@ -12,15 +12,20 @@
  */
 import { createPublicClient, createWalletClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { base } from "viem/chains";
+import { base, baseSepolia } from "viem/chains";
 import { wrapFetchWithPayment, decodeXPaymentResponse } from "x402-fetch";
 import { appendFileSync } from "node:fs";
 
-const RPC = process.env.WEIR_RPC_URL ?? "https://mainnet.base.org";
+const RPC = process.env.WEIR_RPC_URL ?? "https://sepolia.base.org";
+/** Hardcoding a chain here is how you get "invalid chain id for signer". */
+const CHAIN = Number(process.env.WEIR_CHAIN_ID ?? 84532) === 8453 ? base : baseSepolia;
 const WEIR = (process.env.WEIR_ADDRESS ?? "") as `0x${string}`;
 const AGENT_KEY = process.env.AGENT_PRIVATE_KEY as `0x${string}` | undefined;
 const PAID_URL = process.env.X402_URL ?? "";
-const USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
+const USDC = (process.env.WEIR_PAYOUT_TOKEN
+  ?? (CHAIN.id === 8453
+    ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    : "0xba50Cd2A20f6DA35D788639E581bca8d0B5d4D5f")) as `0x${string}`;
 const LEDGER = process.env.WEIR_LEDGER ?? "./agent-ledger.jsonl";
 
 const weirAbi = [
@@ -41,7 +46,7 @@ const erc20Abi = [
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
 ] as const;
 
-const pub = createPublicClient({ chain: base, transport: http(RPC) });
+const pub = createPublicClient({ chain: CHAIN, transport: http(RPC) });
 
 function log(event: string, data: Record<string, unknown>) {
   const row = { t: new Date().toISOString(), event, ...data };
@@ -54,8 +59,8 @@ async function main() {
   if (!WEIR) throw new Error("Set WEIR_ADDRESS");
 
   const account = privateKeyToAccount(AGENT_KEY);
-  const wallet = createWalletClient({ account, chain: base, transport: http(RPC) });
-  log("wake", { agent: account.address });
+  const wallet = createWalletClient({ account, chain: CHAIN, transport: http(RPC) });
+  log("wake", { agent: account.address, chain: CHAIN.name, chainId: CHAIN.id });
 
   // 1. what funds me?
   const ids = (await pub.readContract({

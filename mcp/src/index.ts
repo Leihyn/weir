@@ -11,21 +11,23 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { createPublicClient, http, formatUnits, encodeFunctionData, getAddress } from "viem";
-import { base } from "viem/chains";
+import { base, baseSepolia } from "viem/chains";
 import { endowmentsForAgent, harvestsForAgent, SUBGRAPH_URL } from "./graph.js";
 
 const WEIR = (process.env.WEIR_ADDRESS ?? "") as `0x${string}`;
-const RPC = process.env.WEIR_RPC_URL ?? "https://mainnet.base.org";
+const RPC = process.env.WEIR_RPC_URL ?? "https://sepolia.base.org";
+const CHAIN = Number(process.env.WEIR_CHAIN_ID ?? 84532) === 8453 ? base : baseSepolia;
 const SECONDS_PER_YEAR = 31_536_000;
 const RAY = 10n ** 27n;
 
 const DECIMALS: Record<string, { symbol: string; decimals: number }> = {
   "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": { symbol: "USDC", decimals: 6 },
+  "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f": { symbol: "USDC", decimals: 6 },
   "0x4200000000000000000000000000000000000006": { symbol: "WETH", decimals: 18 },
 };
 const meta = (a: string) => DECIMALS[a.toLowerCase()] ?? { symbol: "?", decimals: 18 };
 
-const client = createPublicClient({ chain: base, transport: http(RPC) });
+const client = createPublicClient({ chain: CHAIN, transport: http(RPC) });
 
 const weirAbi = [
   { type: "function", name: "accrued", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "uint256" }] },
@@ -36,7 +38,9 @@ const weirAbi = [
 const aaveAbi = [
   { type: "function", name: "getReserveNormalizedIncome", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
 ] as const;
-const AAVE_POOL = "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5" as const;
+const AAVE_POOL = (CHAIN.id === 8453
+  ? "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5"
+  : "0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27") as `0x${string}`;
 
 const server = new McpServer({ name: "weir", version: "0.1.0" });
 
@@ -195,7 +199,7 @@ server.tool(
   async ({ endowmentId }) => {
     if (!WEIR) return ok("WEIR_ADDRESS is not set.");
     const data = encodeFunctionData({ abi: weirAbi, functionName: "harvest", args: [BigInt(endowmentId)] });
-    return ok([`to:    ${WEIR}`, `data:  ${data}`, `value: 0`, `chain: base (8453)`].join("\n"));
+    return ok([`to:    ${WEIR}`, `data:  ${data}`, `value: 0`, `chain: ${CHAIN.name} (${CHAIN.id})`].join("\n"));
   }
 );
 
@@ -206,6 +210,7 @@ server.tool(
   async () => ok([
     `subgraph: ${SUBGRAPH_URL || "(not set — budget falls back to live index sampling)"}`,
     `contract: ${WEIR || "(not set)"}`,
+    `chain:    ${CHAIN.name} (${CHAIN.id})`,
     `rpc:      ${RPC}`,
   ].join("\n"))
 );
