@@ -11,3 +11,6 @@ subgraph/build/
 mcp/dist/
 app/.next/
 .DS_Store
+video/node_modules/
+video/out/
+video/public/raw/
