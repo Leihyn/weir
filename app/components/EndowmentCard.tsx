@@ -78,8 +78,11 @@ export function EndowmentCard({
         {label}
       </button>
       <p className="mt-3 text-[11px] text-faint leading-relaxed">
-        Anyone may press this. The amount comes from the index and the destination comes from
-        storage, so a caller has nothing to choose and nothing to gain.
+        <span className="text-fg">You are not the owner, and you are not the agent. Press it
+        anyway.</span>{" "}
+        The amount comes from Aave&apos;s index and the destination comes from storage, so
+        there is nothing for you to choose and nothing for you to gain. That is why this
+        needs no keeper.
       </p>
     </article>
   );

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { LiveIndex } from "../components/LiveIndex";
+import { Solvency } from "../components/Solvency";
 import { EndowmentCard } from "../components/EndowmentCard";
 import { OpenEndowment } from "../components/OpenEndowment";
 import { Endowment, listEndowments, publicClient } from "../lib/chain";
@@ -61,7 +62,10 @@ export default function Page() {
         </p>
       </header>
 
-      <section className="mt-10"><LiveIndex /></section>
+      <section className="mt-10 grid gap-4">
+        <LiveIndex />
+        <Solvency />
+      </section>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
         <div className="grid gap-6 order-1">
