@@ -37,3 +37,22 @@
 | W-8 | manual | package | P1 | Arc-style architecture diagram absent; several sponsors ask for one. | diagram committed | open |
 
 ## Skill Sections
+
+### hackathon-verify (preflight) — 2026-09-13
+
+#### Done
+- Ran all 8 preflight facets against the LIVE Base Sepolia deployment. 5-run demo test executed for real (5/5 on the read path).
+
+#### Deviations
+- Completed all facets despite KZ triggers (contract rule 6 says stop). With <6h left a report that stops at Facet 2 is not actionable.
+- Could not open the submission form (login) or the UI in a browser (Chrome blocks localhost without site permission).
+
+#### Blockers for Downstream
+- KZ-2 TRIGGERED: repo private, no public app URL, no video, no drafted submission content.
+- KZ-4 TRIGGERED: Privy 1/4 (never executed), Bazantic 0/4 (nothing built).
+
+#### Key Decisions
+- Dropping the Bazantic and Privy CLAIMS clears KZ-4 outright. An unclaimed sponsor cannot fail ABCD.
+
+#### For Next Skill
+demo: video is the highest-value remaining artifact and it clears both KZ-2 remainder and Facet 8.

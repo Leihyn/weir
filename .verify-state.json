@@ -1,0 +1,157 @@
+{
+  "status": "blocked",
+  "mode": "preflight",
+  "autonomous_mode": true,
+  "runDate": "2026-09-13",
+  "winnerReadiness": 44,
+  "maxScore": 100,
+  "overallStatus": "BLOCKED",
+  "recommendation": "2 kill-zones (KZ-2 submission, KZ-4 sponsors). Flip repo public, deploy app, drop unbuilt sponsor claims, record video.",
+  "blocked_reason": "KZ-2 no drafted submission content and private repo; KZ-4 Privy 1/4 and Bazantic 0/4",
+  "killZones": {
+    "kz1_demo_reliability": "CLEAR",
+    "kz2_submission_completeness": "TRIGGERED",
+    "kz3_contract_wrong_network": "CLEAR",
+    "kz4_sponsor_integration": "TRIGGERED",
+    "kz4_condition": "Privy 1/4, Bazantic 0/4",
+    "kz5_eligibility_compliance": "CLEAR",
+    "kz5_reason": null
+  },
+  "facets": {
+    "f1_demo_reliability": {
+      "score": 15,
+      "max": 25,
+      "notes": "5/5 read path on live chain; wallet flow untestable (no Privy App ID); UI never seen in a browser"
+    },
+    "f2_submission_completeness": {
+      "score": 0,
+      "max": 20,
+      "notes": "form never opened, repo private, no public URL, no video, no submission/ dir"
+    },
+    "f3_sponsor_integration": {
+      "score": 4,
+      "max": 20,
+      "notes": "Uniswap 3/4=3, Graph 2/4=1, Privy 1/4=0 KZ, Bazantic 0/4=0 KZ"
+    },
+    "f4_technical_correctness": {
+      "score": 10,
+      "max": 15,
+      "notes": "builds+tests clean; contract unverified; free-tier RPC"
+    },
+    "f5_narrative_quality": {
+      "score": 8,
+      "max": 10,
+      "notes": "pitch clean; problem magnitude unestablished; 3 of 5 sponsor fits thin"
+    },
+    "f6_eligibility_compliance": {
+      "score": 4,
+      "max": 5,
+      "notes": "LICENSE file missing while README claims MIT"
+    },
+    "f7_code_quality": {
+      "score": 3,
+      "max": 3,
+      "notes": "no secrets committed; README accurate; build clean"
+    },
+    "f8_presentation_assets": {
+      "score": 0,
+      "max": 2,
+      "notes": "no demo video, no cover image"
+    }
+  },
+  "sponsors": {
+    "Uniswap": {
+      "abcd": "A,B,C pass; D fail (private repo + form unsubmitted)",
+      "score": 3,
+      "max": 5
+    },
+    "The Graph": {
+      "abcd": "A,C pass; B,D fail (subgraph not deployed, live data required)",
+      "score": 1,
+      "max": 5
+    },
+    "Privy": {
+      "abcd": "A pass only; never executed, zero wallets",
+      "score": 0,
+      "max": 5,
+      "kz4": true
+    },
+    "Bazantic": {
+      "abcd": "0/4, nothing built",
+      "score": 0,
+      "max": 5,
+      "kz4": true
+    }
+  },
+  "blockers": [
+    "KZ-2: repo private, no public app URL, no video, no drafted submission content",
+    "KZ-4: Bazantic claimed but 0/4 built",
+    "KZ-4: Privy claimed but never executed (no App ID)",
+    "LICENSE file missing",
+    "subgraph not deployed, so The Graph's $10k is unreachable",
+    "Uniswap Developer Feedback Form not submitted",
+    "contract not verified on Basescan",
+    "UI never rendered in a browser"
+  ],
+  "triage_order": [
+    "flip repo public + deploy app",
+    "drop Bazantic and Privy claims",
+    "deploy subgraph to Studio",
+    "record 2-4 min video",
+    "add LICENSE",
+    "submit Uniswap feedback form",
+    "verify contract",
+    "draft submission fields"
+  ],
+  "milestones": [],
+  "downstream_items": {
+    "open": 8,
+    "done": 0,
+    "waived": 0,
+    "unactioned_p1": [
+      "W-7: UI never seen in a browser"
+    ],
+    "unactioned_p2": []
+  },
+  "winningPatternChecks": {
+    "wp1_landing": {
+      "status": "WARN",
+      "detail": "SSR shows 'No endowments yet'; list is client-fetched"
+    },
+    "wp2_testRatio": {
+      "status": "FAIL",
+      "ratio": 0.17,
+      "detail": "3 test files / 18 source files (23 tests total)"
+    },
+    "wp3_multiTrack": {
+      "status": "WARN",
+      "realTracks": 1,
+      "claimedTracks": 4
+    },
+    "wp4_submissionDir": {
+      "status": "FAIL",
+      "detail": "submission/ missing"
+    },
+    "wp5_readmeStory": {
+      "status": "PASS",
+      "detail": "Problem -> Solution -> How -> Trust -> Status -> Troubleshooting"
+    }
+  },
+  "contractAddresses": {
+    "Weir": "0xE8b6f6C5cF6dB470c3a3Fe18a1977e55aC0Eb645",
+    "chain": "base-sepolia",
+    "chainId": 84532
+  },
+  "buildVerification": {
+    "contractAddresses": {},
+    "deviationCount": 0,
+    "knownRiskCount": 0
+  },
+  "debugIntegration": {
+    "confidenceScore": null,
+    "unresolvedCount": null,
+    "testCoverage": null
+  },
+  "context_percentage": 0,
+  "errors": []
+}
