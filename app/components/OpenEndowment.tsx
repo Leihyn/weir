@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { parseUnits } from "viem";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { walletFrom } from "../lib/wallet";
+import { resolveWallet, hasInjected } from "../lib/connect";
 import { publicClient } from "../lib/chain";
 import { weirAbi, erc20Abi } from "../lib/abi";
 import { ASSETS, WEIR, PRIVY_APP_ID } from "../lib/config";
@@ -27,9 +27,7 @@ export function OpenEndowment({ onDone }: { onDone: () => void }) {
       if (!WEIR) throw new Error("Weir address not configured yet");
       if (!/^0x[0-9a-fA-F]{40}$/.test(agent)) throw new Error("Enter a valid agent address");
 
-      const provider = await wallets.wallets[0]?.getEthereumProvider();
-      if (!provider) throw new Error("Connect a wallet first");
-      const wc = await walletFrom(provider);
+      const wc = await resolveWallet(wallets.wallets ?? []);
       const owner = wc.account!.address;
 
       const amt = parseUnits(amount, asset.decimals);
@@ -95,16 +93,20 @@ export function OpenEndowment({ onDone }: { onDone: () => void }) {
         </Labeled>
       </div>
 
-      {!PRIVY_APP_ID ? (
-        <p className="mt-4 text-xs text-warn">
-          Read-only mode: set NEXT_PUBLIC_PRIVY_APP_ID to enable the write path.
-        </p>
-      ) : !connected ? (
-        <button onClick={() => privy?.login()} className={btn}>Sign in to endow</button>
+      {PRIVY_APP_ID && !connected ? (
+        <button onClick={() => privy?.login()} className={btn}>
+          Sign in to endow
+        </button>
       ) : (
         <button onClick={submit} disabled={busy} className={btn}>
           {busy ? (status ?? "working…") : "Commit principal"}
         </button>
+      )}
+      {!PRIVY_APP_ID && (
+        <p className="mt-2 text-[11px] text-muted">
+          Using your browser wallet on Base Sepolia. Email sign-in activates when a Privy app
+          id is configured.
+        </p>
       )}
       {status && !busy && <p className="mt-2 text-xs text-muted">{status}</p>}
     </div>

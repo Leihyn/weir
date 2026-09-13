@@ -173,20 +173,32 @@ Uniswap feedback: [`FEEDBACK.md`](./FEEDBACK.md)
 
 ## Where the sponsor tech sits
 
-- **Aave v3** is the index. The whole mechanic is `getReserveNormalizedIncome`.
-- **Privy** is how an owner signs in and commits principal, and how an agent holds
-  a spending wallet.
+Claimed only where the integration is real. A sponsor listed without working code is worse
+than one not listed, so this section is deliberately short.
+
+- **Aave v3** is the index, and the entire mechanic is `getReserveNormalizedIncome`. Not an
+  ETHOnline sponsor, but the deepest dependency by far.
 - **Uniswap** converts a non-USDC endowment's yield into spendable USDC via
-  `harvestAndSwap`, so an endowment can be held in WETH and the agent still gets paid
-  in something it can spend. The swap keeps `harvest` permissionless because
-  `amountOutMinimum` is floored by Aave's own Chainlink-backed oracle: a caller may
-  raise the slippage guard but never lower it, so `minOut = 0` does not open a
-  sandwich. Verified on a fork: a 10 WETH endowment accrued 0.08638 WETH over 180
-  days and paid the agent **218.698043 USDC**, matching the oracle price of $2,531.54
-  to within two cents.
-- **The Graph** indexes every endowment and every release. The MCP server answers
-  *"what can I spend forever?"* from indexed harvest history, which is the question
-  an endowed agent actually needs and cannot get from a balance call.
+  `harvestAndSwap`, so an endowment can be held in WETH and the agent still gets paid in
+  something it can spend. The swap keeps `harvest` permissionless because
+  `amountOutMinimum` is floored by Aave's own Chainlink-backed oracle: a caller may raise
+  the slippage guard but never lower it, so `minOut = 0` does not open a sandwich. Verified
+  on a fork: a 10 WETH endowment accrued 0.08638 WETH over 180 days and paid the agent
+  **218.698043 USDC**, matching the oracle price of $2,531.54 to within two cents.
+  See `harvestAndSwap` and `_oracleFloor` in `contracts/src/Weir.sol`.
+- **The Graph** indexes every endowment and every release, and the MCP server answers
+  *"what can I spend forever?"* from indexed harvest history. That is the question an
+  endowed agent actually needs and cannot get from a balance call. See
+  `subgraph/src/weir.ts` and `weir_sustainable_budget` in `mcp/src/index.ts`.
+
+**Privy** is wired for email sign-in and embedded wallets in `app/components/Providers.tsx`,
+and when an app id is configured it is how an owner signs in and commits principal. It is
+deliberately **not** the only way in: `app/lib/connect.ts` falls back to any injected wallet,
+because gating the whole write path on one vendor's key turns a missing environment variable
+into a dead demo.
+
+**Not claimed:** Hedera, Arc, 1inch, ENS, Ledger, Chainlink, World, Bazantic. Nothing was
+built against them.
 
 ## Trust model, stated plainly
 

@@ -5,7 +5,7 @@ import { LiveIndex } from "../components/LiveIndex";
 import { EndowmentCard } from "../components/EndowmentCard";
 import { OpenEndowment } from "../components/OpenEndowment";
 import { Endowment, listEndowments, publicClient } from "../lib/chain";
-import { walletFrom } from "../lib/wallet";
+import { resolveWallet, hasInjected } from "../lib/connect";
 import { weirAbi } from "../lib/abi";
 import { WEIR, PRIVY_APP_ID, EXPLORER, NETWORK } from "../lib/config";
 
@@ -25,9 +25,7 @@ export default function Page() {
   const harvest = async (id: bigint) => {
     setBusyId(id); setErr(null);
     try {
-      const provider = await wallets.wallets[0]?.getEthereumProvider();
-      if (!provider) throw new Error("Connect a wallet to send the harvest transaction");
-      const wc = await walletFrom(provider);
+      const wc = await resolveWallet(wallets.wallets ?? []);
       const hash = await wc.writeContract({
         address: WEIR, abi: weirAbi, functionName: "harvest",
         args: [id], chain: undefined, account: wc.account!,
