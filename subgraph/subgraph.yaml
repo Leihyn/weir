@@ -8,9 +8,9 @@ dataSources:
     name: Weir
     network: base-sepolia
     source:
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0xE8b6f6C5cF6dB470c3a3Fe18a1977e55aC0Eb645"
       abi: Weir
-      startBlock: 46739210
+      startBlock: 46762240
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
