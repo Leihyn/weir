@@ -351,6 +351,12 @@ compiler with no line number.
 **The app says "Contract address not configured"**
 Set `NEXT_PUBLIC_WEIR_ADDRESS` in `.env.local` and restart.
 
+## AI tool use
+
+Built with Claude Code as the implementing agent, directed by the human team member. Full
+disclosure of what the AI wrote, what the human contributed, the planning artifacts, and the
+bugs the AI introduced and later caught: [`AI-USE.md`](./AI-USE.md).
+
 ## Licence
 
 MIT.
