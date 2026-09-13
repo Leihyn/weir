@@ -239,6 +239,55 @@ for agents, because agents get compromised. The perpetuity matters most for peop
 bills outlive salaries. The last mile to fiat is a commodity with many providers; the part
 that did not exist is a release schedule an agent cannot outrun.
 
+## What else could be an endowment source
+
+Weir needs one property from an asset: a **readable, monotonically increasing index**, so
+that `balance = raw x index` and the increment is `raw x (1 - i0/i1)`. Not lending. Not Aave.
+
+Qualifies today, needing only a thin adapter: Aave aTokens, Compound cTokens, **every
+ERC-4626 vault** (sDAI, sUSDS, Morpho, Euler, Spark, Yearn v3), stETH and other LSTs, and
+index-accruing RWA. On Solana, Token-2022 scaled-UI, which is what our sibling project
+harvests.
+
+### Uniswap v3 LP fees are arguably a *better* source than Aave
+
+Uniswap tracks fee growth separately from liquidity. `feeGrowthInside0LastX128` only ever
+increases, and `collect()` on the NonfungiblePositionManager **cannot touch liquidity at
+all** — reducing a position requires `decreaseLiquidity()`.
+
+So Uniswap already enforces the income-versus-corpus split inside the protocol. An LP
+endowment's guarantee would stop depending on our arithmetic and start depending on
+Uniswap's own function boundary, which is a stronger place for it to live. Cost: an adapter
+plus ERC-721 custody, roughly 60-80 lines and tests. It is the first thing we would build
+next.
+
+### Market-priced assets are possible, but they cost the guarantee
+
+Stocks whose value moves with price have no income stream to separate. Harvesting price
+movement is **selling capital, not spending income**: every rally forces a sale, nothing
+rebuys, and the position ratchets down. That is the opposite of an endowment.
+
+The real path is the six-hundred-year-old one: a **spending rule**. Release X% of a trailing
+N-period average value rather than of realised income, which is what large university
+endowments actually do, precisely because volatile capital cannot be spent safely. On-chain
+that needs a price oracle (we already use Aave's), a stored time-weighted average, and a
+period accumulator.
+
+The cost is not lines of code. It is that **"the agent cannot touch the principal" stops
+being arithmetic and becomes policy.** Today it is provable: after withdrawing the accrual
+the balance is `P` again, by construction. Under a smoothing rule, a 40% drawdown at a 5%
+spend rate means you *are* spending principal.
+
+A high-water mark restores a hard guarantee — never release unless current value exceeds
+principal — but then the agent earns nothing for years in a bear market, which for a product
+that promises to pay bills forever is its own failure. **Hard guarantee or smooth payout.
+Not both.** That is a design fork, not a coding problem, and we chose the hard guarantee.
+
+### Not suitable
+
+Perpetuals and options have no separable income stream and funding can be negative. An
+endowment on a leveraged position is a bad idea at any budget.
+
 ## Trust model, stated plainly
 
 - The owner can close an endowment at any time and recover all principal.
