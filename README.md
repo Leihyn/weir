@@ -1,4 +1,4 @@
-# Weir
+# Weir Protocol
 
 **Perpetual subscriptions for AI agents. The yield pays the bills forever;
 the agent can never touch the principal.**
