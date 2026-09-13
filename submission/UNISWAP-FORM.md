@@ -21,7 +21,7 @@ dedicated field for that link**, so it goes into two free-text fields below for 
 | Telegram handle *(required)* | **TODO — only you have this** |
 | Which hackathon did you participate in? *(required)* | `ETHOnline 2026` |
 | Did you complete a project during the hackathon? *(required)* | `Yes` |
-| Are you building an AI-powered or agentic project? *(required)* | `Yes` |
+| Are you building an AI-powered or agentic project? *(required)* | **`Yes: a bot / agent that executes onchain actions`** |
 | Were you able to successfully integrate Uniswap into your project? *(required)* | `Yes` |
 | How long did it take to get your first successful integration working? *(required)* | Shortest bucket offered. `harvestAndSwap` went from interfaces written to a passing fork test in roughly an hour. |
 | How helpful was the Uniswap documentation for your use case? *(1-5, required)* | `3` |
@@ -30,6 +30,20 @@ dedicated field for that link**, so it goes into two free-text fields below for 
 | What type of support did you use? *(required, checkboxes)* | `Technical docs`, `Code examples/templates` |
 | Can we follow up with you about your feedback? *(required)* | Your call |
 | Terms agreement *(required)* | Check it |
+
+### Observed dropdown options
+
+**"Are you building an AI-powered or agentic project?"** offers exactly these five:
+
+1. **Yes: a bot / agent that executes onchain actions** ← **pick this**
+2. Yes: an LLM-powered app that uses Uniswap as a tool
+3. Yes: building AI tooling (Cursor/Claude Code plugins, MCP servers)
+4. No: but I'm considering it
+5. No: not in scope for what I'm building
+
+Option 1 is the honest answer *for this form*. Weir does ship an MCP server (option 3), but
+the MCP never touches Uniswap. The Uniswap integration is `harvestAndSwap`, which the agent
+calls on-chain itself, so option 1 is the accurate match.
 
 ---
 
